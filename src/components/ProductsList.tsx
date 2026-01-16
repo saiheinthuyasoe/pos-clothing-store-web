@@ -66,6 +66,15 @@ export default function ProductsList() {
   );
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage] = useState<number>(40);
+  const [showFilter, setShowFilter] = useState(false);
+  const [filterBranch, setFilterBranch] = useState<string>("all");
+  const [filterCategory, setFilterCategory] = useState<string>("all");
+  const [filterColor, setFilterColor] = useState<string>("");
+  const [filterMinPrice, setFilterMinPrice] = useState<string>("");
+  const [filterMaxPrice, setFilterMaxPrice] = useState<string>("");
+  const [filterCurrency, setFilterCurrency] = useState<"THB" | "MMK">("THB");
+  const [filterSize, setFilterSize] = useState<string>("");
+  const [shops, setShops] = useState<Array<{ id: string; name: string }>>([]);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -108,6 +117,11 @@ export default function ProductsList() {
             groupImage: data.groupImage,
             colorVariants: colorVariants,
             stock: data.stock || stockFromVariants || 0,
+            shop:
+              (data as any).shop ||
+              (data as any).shopId ||
+              (data as any).branch ||
+              "",
             createdAt: data.createdAt || null,
             isNew: (() => {
               try {
@@ -180,18 +194,165 @@ export default function ProductsList() {
     loadRate();
   }, []);
 
+  // fetch shops (branches) for the branch filter
+  useEffect(() => {
+    const loadShops = async () => {
+      try {
+        const res = await fetch("/api/shops");
+        if (!res.ok) return;
+        const json = await res.json().catch(() => null);
+        if (json && Array.isArray(json.data)) {
+          const mapped = json.data.map((s: any) => ({
+            id: s.id,
+            name: s.name,
+          }));
+          setShops(mapped);
+        }
+      } catch (e) {
+        console.error("Failed loading /api/shops", e);
+      }
+    };
+
+    loadShops();
+  }, []);
+
+  // derive filter option lists from products
+  const branches = shops;
+  // derive available options scoped to the selected branch
+  const branchFilteredProducts = (() => {
+    if (!products) return [] as Product[];
+    if (filterBranch === "all") return products;
+    const selectedShop = shops.find((s) => s.id === filterBranch);
+    const shopName = selectedShop?.name;
+    return products.filter((p) => {
+      const pShop = ((p as any).shop || "").toString();
+      return pShop === filterBranch || pShop === shopName;
+    });
+  })();
+
+  const categories = branchFilteredProducts
+    ? Array.from(
+        new Set(
+          branchFilteredProducts
+            .map((p) => (p as any).description || (p as any).category || "")
+            .filter(Boolean)
+        )
+      )
+    : [];
+  // derive unique colors with optional color codes
+  const colors = (() => {
+    if (!branchFilteredProducts)
+      return [] as { label: string; code?: string }[];
+    const map = new Map<string, string | undefined>();
+    for (const p of branchFilteredProducts) {
+      const variants = (p as any).colorVariants || [];
+      for (const v of variants) {
+        const label = v.color || v.name || v.colorName || v.colorCode || "";
+        if (!label) continue;
+        if (!map.has(label)) map.set(label, v.colorCode || undefined);
+      }
+    }
+    return Array.from(map.entries()).map(([label, code]) => ({ label, code }));
+  })();
+  const sizes = branchFilteredProducts
+    ? Array.from(
+        new Set(
+          branchFilteredProducts
+            .flatMap((p) => (p as any).colorVariants || [])
+            .flatMap((v: any) =>
+              (v.sizeQuantities || []).map((s: any) => s.size)
+            )
+            .filter(Boolean)
+        )
+      )
+    : [];
+
+  // when branch changes, ensure selected category/color/size remain valid
+  useEffect(() => {
+    if (!branchFilteredProducts) return;
+    if (filterCategory !== "all" && !categories.includes(filterCategory)) {
+      setFilterCategory("all");
+    }
+    if (filterColor && !colors.find((c) => c.label === filterColor)) {
+      setFilterColor("");
+    }
+    if (filterSize && !sizes.map(String).includes(String(filterSize))) {
+      setFilterSize("");
+    }
+  }, [filterBranch, shops, products]);
+
+  // apply filters
+  const filteredProducts = products
+    ? products.filter((p) => {
+        if (filterBranch !== "all") {
+          const selectedShop = shops.find((s) => s.id === filterBranch);
+          const shopName = selectedShop?.name;
+          const pShop = ((p as any).shop || "").toString();
+          // match by id or by name
+          if (pShop !== filterBranch && pShop !== shopName) return false;
+        }
+        if (
+          filterCategory !== "all" &&
+          ((p as any).description || (p as any).category || "") !==
+            filterCategory
+        )
+          return false;
+        if (filterColor) {
+          const target = String(filterColor).toLowerCase();
+          const has = ((p as any).colorVariants || []).some((v: any) => {
+            const candidates: string[] = [];
+            if (v.color) candidates.push(String(v.color));
+            if (v.name) candidates.push(String(v.name));
+            if (v.colorName) candidates.push(String(v.colorName));
+            if (v.colorCode) candidates.push(String(v.colorCode));
+            return candidates.some((c) => c.toLowerCase() === target);
+          });
+          if (!has) return false;
+        }
+        if (filterSize) {
+          const hasSize = ((p as any).colorVariants || []).some((v: any) =>
+            (v.sizeQuantities || []).some(
+              (sq: any) =>
+                String(sq.size) === filterSize && Number(sq.quantity) > 0
+            )
+          );
+          if (!hasSize) return false;
+        }
+        if (filterMinPrice || filterMaxPrice) {
+          const price = Number(p.price || 0);
+          const priceCompare =
+            filterCurrency === "THB" ? price : Math.round(price * mmkRate);
+          if (filterMinPrice && priceCompare < Number(filterMinPrice))
+            return false;
+          if (filterMaxPrice && priceCompare > Number(filterMaxPrice))
+            return false;
+        }
+        return true;
+      })
+    : [];
+
   // Pagination calculations (hooks must be declared before any early returns)
-  const totalPages = products
-    ? Math.max(1, Math.ceil(products.length / itemsPerPage))
-    : 1;
-  // ensure current page is within bounds when products change
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredProducts.length / itemsPerPage)
+  );
+  // ensure current page is within bounds when products or filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [products]);
+  }, [
+    products,
+    filterBranch,
+    filterCategory,
+    filterColor,
+    filterSize,
+    filterMinPrice,
+    filterMaxPrice,
+    filterCurrency,
+  ]);
 
-  const startIndex = products ? (currentPage - 1) * itemsPerPage : 0;
+  const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const visibleProducts = products ? products.slice(startIndex, endIndex) : [];
+  const visibleProducts = filteredProducts.slice(startIndex, endIndex);
 
   if (loading) return <div className="p-8">Loading products…</div>;
   if (error) return <div className="p-8 text-red-600">Error: {error}</div>;
@@ -227,11 +388,126 @@ export default function ProductsList() {
     );
   };
 
+  // removed old getColorCode helper — colors now include codes
+
   // Conversion rate THB -> MMK (Ks). `mmkRate` state is populated from owner
   // settings API and falls back to `NEXT_PUBLIC_MMK_RATE`.
 
   return (
     <>
+      <div className="flex items-center justify-between px-2 py-2 md:px-6 md:py-4">
+        <div className="flex items-center space-x-3">
+          <div className="text-sm text-gray-600">
+            {filteredProducts ? `${filteredProducts.length} items` : ""}
+          </div>
+
+          <div className="flex items-center space-x-2">
+            {filterBranch !== "all" && (
+              <span className="inline-flex items-center space-x-2 bg-amber-100 text-amber-900 text-sm px-3 py-1 rounded">
+                <span>
+                  {shops.find((s) => s.id === filterBranch)?.name ||
+                    filterBranch}
+                </span>
+                <button
+                  onClick={() => setFilterBranch("all")}
+                  aria-label="Remove branch filter"
+                  className="text-amber-700 hover:text-amber-900 ml-1"
+                >
+                  ×
+                </button>
+              </span>
+            )}
+
+            {filterCategory !== "all" && (
+              <span className="inline-flex items-center space-x-2 bg-amber-100 text-amber-900 text-sm px-3 py-1 rounded">
+                <span>{filterCategory}</span>
+                <button
+                  onClick={() => setFilterCategory("all")}
+                  aria-label="Remove category filter"
+                  className="text-amber-700 hover:text-amber-900 ml-1"
+                >
+                  ×
+                </button>
+              </span>
+            )}
+
+            {filterColor && (
+              <span className="inline-flex items-center space-x-2 bg-amber-100 text-amber-900 text-sm px-3 py-1 rounded">
+                <span>{filterColor}</span>
+                <button
+                  onClick={() => setFilterColor("")}
+                  aria-label="Remove color filter"
+                  className="text-amber-700 hover:text-amber-900 ml-1"
+                >
+                  ×
+                </button>
+              </span>
+            )}
+
+            {filterSize && (
+              <span className="inline-flex items-center space-x-2 bg-amber-100 text-amber-900 text-sm px-3 py-1 rounded">
+                <span>{filterSize}</span>
+                <button
+                  onClick={() => setFilterSize("")}
+                  aria-label="Remove size filter"
+                  className="text-amber-700 hover:text-amber-900 ml-1"
+                >
+                  ×
+                </button>
+              </span>
+            )}
+
+            {(filterMinPrice || filterMaxPrice) && (
+              <span className="inline-flex items-center space-x-2 bg-amber-100 text-amber-900 text-sm px-3 py-1 rounded">
+                <span>
+                  {filterCurrency} {filterMinPrice || "-"} -{" "}
+                  {filterMaxPrice || "-"}
+                </span>
+                <button
+                  onClick={() => {
+                    setFilterMinPrice("");
+                    setFilterMaxPrice("");
+                  }}
+                  aria-label="Remove price filter"
+                  className="text-amber-700 hover:text-amber-900 ml-1"
+                >
+                  ×
+                </button>
+              </span>
+            )}
+
+            {(filterBranch !== "all" ||
+              filterCategory !== "all" ||
+              filterColor ||
+              filterSize ||
+              filterMinPrice ||
+              filterMaxPrice) && (
+              <button
+                onClick={() => {
+                  setFilterBranch("all");
+                  setFilterCategory("all");
+                  setFilterColor("");
+                  setFilterSize("");
+                  setFilterMinPrice("");
+                  setFilterMaxPrice("");
+                  setFilterCurrency("THB");
+                }}
+                className="text-sm text-blue-600 underline ml-2"
+              >
+                Clear all
+              </button>
+            )}
+          </div>
+        </div>
+        <div>
+          <button
+            onClick={() => setShowFilter((s) => !s)}
+            className="px-3 py-1 rounded border border-gray-300 bg-white text-sm hover:bg-gray-50"
+          >
+            Filters {showFilter ? "▲" : "▼"}
+          </button>
+        </div>
+      </div>
       <div className="grid grid-cols-2 gap-2 px-2 py-4 sm:grid-cols-2 md:gap-4 md:px-6 md:py-6 md:grid-cols-2 lg:gap-6 lg:px-6 lg:grid-cols-3 xl:gap-8 xl:px-6 xl:grid-cols-4 bg-white md:max-w-[1000px] md:mx-auto lg:max-w-[1400px] lg:mx-auto xl:max-w-[1800px] xl:mx-auto">
         {visibleProducts.map((p) => {
           const hasVariants =
@@ -415,6 +691,188 @@ export default function ProductsList() {
             </div>
           );
         })}
+      </div>
+      {/* Slide-in filter panel */}
+      <div
+        className={`fixed inset-y-0 left-0 z-50 w-80 bg-white shadow-lg transform transition-transform duration-300 ${
+          showFilter ? "translate-x-0" : "-translate-x-full"
+        }`}
+        aria-hidden={!showFilter}
+      >
+        <div className="p-4 h-full flex flex-col">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-medium">Filters</h3>
+            <button
+              onClick={() => setShowFilter(false)}
+              aria-label="Close filters"
+              className="text-gray-500 hover:text-gray-700 p-1 rounded"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M6 6l12 12" />
+                <path d="M6 18L18 6" />
+              </svg>
+            </button>
+          </div>
+
+          <div className="space-y-4 overflow-auto">
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                Branch
+              </label>
+              <select
+                value={filterBranch}
+                onChange={(e) => setFilterBranch(e.target.value)}
+                className="w-full border border-gray-200 rounded px-2 py-1 text-sm"
+              >
+                <option value="all">All branches</option>
+                {branches.map((sh: any) => (
+                  <option key={sh.id} value={sh.id}>
+                    {sh.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                Category
+              </label>
+              <select
+                value={filterCategory}
+                onChange={(e) => setFilterCategory(e.target.value)}
+                className="w-full border border-gray-200 rounded px-2 py-1 text-sm"
+              >
+                <option value="all">All categories</option>
+                {categories.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                Color
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {colors.length === 0 && (
+                  <div className="text-xs text-gray-500">No colors</div>
+                )}
+                {colors.map((col) => {
+                  const code = col.code || "#ddd";
+                  const isSelected = filterColor === col.label;
+                  return (
+                    <button
+                      key={col.label}
+                      onClick={() =>
+                        setFilterColor(isSelected ? "" : col.label)
+                      }
+                      title={col.label}
+                      className={`w-7 h-7 rounded-full border transition-all flex items-center justify-center ${
+                        isSelected
+                          ? "ring-2 ring-offset-1 ring-blue-400 border-transparent"
+                          : "border-gray-200"
+                      }`}
+                      style={{ backgroundColor: code }}
+                      aria-pressed={isSelected}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                Size
+              </label>
+              <select
+                value={filterSize}
+                onChange={(e) => setFilterSize(e.target.value)}
+                className="w-full border border-gray-200 rounded px-2 py-1 text-sm"
+              >
+                <option value="">Any size</option>
+                {sizes.map((s) => (
+                  <option key={String(s)} value={String(s)}>
+                    {String(s)}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                Price ({filterCurrency})
+              </label>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="number"
+                  value={filterMinPrice}
+                  onChange={(e) => setFilterMinPrice(e.target.value)}
+                  placeholder="Min"
+                  className="w-1/2 border border-gray-200 rounded px-2 py-1 text-sm"
+                />
+                <input
+                  type="number"
+                  value={filterMaxPrice}
+                  onChange={(e) => setFilterMaxPrice(e.target.value)}
+                  placeholder="Max"
+                  className="w-1/2 border border-gray-200 rounded px-2 py-1 text-sm"
+                />
+              </div>
+              <div className="mt-2 flex items-center space-x-2 text-sm">
+                <label className="inline-flex items-center">
+                  <input
+                    type="radio"
+                    name="currency"
+                    checked={filterCurrency === "THB"}
+                    onChange={() => setFilterCurrency("THB")}
+                    className="mr-1"
+                  />
+                  THB
+                </label>
+                <label className="inline-flex items-center">
+                  <input
+                    type="radio"
+                    name="currency"
+                    checked={filterCurrency === "MMK"}
+                    onChange={() => setFilterCurrency("MMK")}
+                    className="mr-1"
+                  />
+                  MMK
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-auto pt-4">
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => {
+                  setFilterBranch("all");
+                  setFilterCategory("all");
+                  setFilterColor("");
+                  setFilterSize("");
+                  setFilterMinPrice("");
+                  setFilterMaxPrice("");
+                  setFilterCurrency("THB");
+                }}
+                className="px-3 py-2 rounded border border-gray-300 bg-white text-sm"
+              >
+                Reset
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Pagination controls */}

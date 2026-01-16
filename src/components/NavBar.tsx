@@ -65,7 +65,7 @@ export default function NavBar() {
               />
             </div>
             <span className="text-lg font-semibold text-black">
-              Simple Clothing
+              Swe Trendy Hub
             </span>
           </Link>
         </div>
