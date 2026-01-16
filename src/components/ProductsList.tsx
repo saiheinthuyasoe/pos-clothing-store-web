@@ -331,10 +331,24 @@ export default function ProductsList() {
       })
     : [];
 
+  // Put out-of-stock items at the end while preserving relative order
+  const sortedProducts = filteredProducts
+    ? (() => {
+        const inStock: Product[] = [];
+        const outStock: Product[] = [];
+        for (const p of filteredProducts) {
+          const qty = Number((p as any).stock || 0);
+          if (qty > 0) inStock.push(p);
+          else outStock.push(p);
+        }
+        return [...inStock, ...outStock];
+      })()
+    : [];
+
   // Pagination calculations (hooks must be declared before any early returns)
   const totalPages = Math.max(
     1,
-    Math.ceil(filteredProducts.length / itemsPerPage)
+    Math.ceil(sortedProducts.length / itemsPerPage)
   );
   // ensure current page is within bounds when products or filters change
   useEffect(() => {
@@ -352,7 +366,7 @@ export default function ProductsList() {
 
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const visibleProducts = filteredProducts.slice(startIndex, endIndex);
+  const visibleProducts = sortedProducts.slice(startIndex, endIndex);
 
   if (loading) return <div className="p-8">Loading products…</div>;
   if (error) return <div className="p-8 text-red-600">Error: {error}</div>;
@@ -604,12 +618,14 @@ export default function ProductsList() {
                 <div className="mb-2">
                   {p.price ? (
                     <div className="text-sm text-gray-900">
-                      <span className="font-medium">{`${p.price.toFixed(
-                        2
-                      )} THB`}</span>
-                      <span className="ml-3 text-gray-500">{`${Math.round(
-                        p.price * mmkRate
-                      ).toLocaleString()} Ks`}</span>
+                      <div>
+                        <span className="font-medium">{`${p.price.toFixed(
+                          2
+                        )} THB`}</span>
+                      </div>
+                      <div className="text-gray-500 text-xs mt-1">
+                        {`${Math.round(p.price * mmkRate).toLocaleString()} Ks`}
+                      </div>
                     </div>
                   ) : (
                     <span className="text-sm text-gray-900">—</span>
