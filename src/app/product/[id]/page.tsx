@@ -15,6 +15,21 @@ type ColorVariant = {
   image?: string;
   sizeQuantities?: SizeQuantity[];
 };
+type Product = {
+  id?: string;
+  colorVariants?: ColorVariant[];
+  stock?: number;
+  groupName?: string;
+  name?: string;
+  unitPrice?: number | string;
+  price?: number | string;
+  groupImage?: string;
+  image?: string;
+  category?: string;
+  description?: string;
+  modelInfo?: string | number;
+  [key: string]: unknown;
+};
 
 export default function ProductDetailPage() {
   const params = useParams() as { id?: string };
@@ -22,7 +37,7 @@ export default function ProductDetailPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [product, setProduct] = useState<any | null>(null);
+  const [product, setProduct] = useState<Product | null>(null);
 
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(
     null,
@@ -190,8 +205,9 @@ export default function ProductDetailPage() {
         }
         const data = snap.data();
         setProduct({ id: snap.id, ...data });
-      } catch (e: any) {
-        setError(e?.message || String(e));
+      } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : String(e);
+        setError(message);
       } finally {
         setLoading(false);
       }
@@ -421,7 +437,7 @@ export default function ProductDetailPage() {
                   ) : (sizesToShow || []).length === 0 ? (
                     <div className="text-xs text-gray-500">No sizes</div>
                   ) : null}
-                  {(sizesToShow || []).map((sq: any) => {
+                  {(sizesToShow || []).map((sq: SizeQuantity) => {
                     const qty = Number(sq.quantity) || 0;
                     const isSelected = selectedSize === String(sq.size);
                     return (

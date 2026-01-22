@@ -45,12 +45,14 @@ type Product = {
   name?: string;
   price?: number;
   description?: string;
+  category?: string;
   image?: string;
   groupImage?: string;
   colorVariants?: ColorVariant[];
   stock?: number;
   createdAt?: FirestoreTimestampLike;
   isNew?: boolean;
+  shop?: string;
 };
 
 export default function ProductsList({
@@ -73,7 +75,7 @@ export default function ProductsList({
 
   // listen for global search events dispatched from NavBar when using replaceState
   useEffect(() => {
-    const handler = (e: any) => {
+    const handler = (e: CustomEvent) => {
       const q = (e?.detail || "").toString();
       setLocalQuery(q || "");
     };
@@ -154,9 +156,9 @@ export default function ProductsList({
             colorVariants: colorVariants,
             stock: data.stock || stockFromVariants || 0,
             shop:
-              (data as any).shop ||
-              (data as any).shopId ||
-              (data as any).branch ||
+              (data as FirestoreStockDoc).shop?.toString() ||
+              (data as FirestoreStockDoc).shopId?.toString() ||
+              (data as FirestoreStockDoc).branch?.toString() ||
               "",
             createdAt: data.createdAt || null,
             isNew: (() => {
@@ -238,7 +240,7 @@ export default function ProductsList({
         if (!res.ok) return;
         const json = await res.json().catch(() => null);
         if (json && Array.isArray(json.data)) {
-          const mapped = json.data.map((s: any) => ({
+          const mapped = json.data.map((s: { id: string; name: string }) => ({
             id: s.id,
             name: s.name,
           }));
@@ -261,7 +263,7 @@ export default function ProductsList({
     const selectedShop = shops.find((s) => s.id === filterBranch);
     const shopName = selectedShop?.name;
     return products.filter((p) => {
-      const pShop = ((p as any).shop || "").toString();
+      const pShop = ((p as Product).shop || "").toString();
       return pShop === filterBranch || pShop === shopName;
     });
   })();
@@ -270,7 +272,10 @@ export default function ProductsList({
     ? Array.from(
         new Set(
           branchFilteredProducts
-            .map((p) => (p as any).description || (p as any).category || "")
+            .map(
+              (p) =>
+                (p as Product).description || (p as Product).category || "",
+            )
             .filter(Boolean),
         ),
       )
@@ -280,9 +285,9 @@ export default function ProductsList({
     ? Array.from(
         new Set(
           branchFilteredProducts
-            .flatMap((p) => (p as any).colorVariants || [])
-            .flatMap((v: any) =>
-              (v.sizeQuantities || []).map((s: any) => s.size),
+            .flatMap((p) => (p as Product).colorVariants || [])
+            .flatMap((v: ColorVariant) =>
+              (v.sizeQuantities || []).map((s: SizeQuantity) => s.size),
             )
             .filter(Boolean),
         ),
@@ -306,30 +311,31 @@ export default function ProductsList({
         if (filterBranch !== "all") {
           const selectedShop = shops.find((s) => s.id === filterBranch);
           const shopName = selectedShop?.name;
-          const pShop = ((p as any).shop || "").toString();
+          const pShop = ((p as Product).shop || "").toString();
           // match by id or by name
           if (pShop !== filterBranch && pShop !== shopName) return false;
         }
         if (
           filterCategory !== "all" &&
-          ((p as any).description || (p as any).category || "") !==
+          ((p as Product).description || (p as Product).category || "") !==
             filterCategory
         )
           return false;
         // color filter removed
         if (filterSize) {
-          const hasSize = ((p as any).colorVariants || []).some((v: any) =>
-            (v.sizeQuantities || []).some(
-              (sq: any) =>
-                String(sq.size) === filterSize && Number(sq.quantity) > 0,
-            ),
+          const hasSize = ((p as Product).colorVariants || []).some(
+            (v: ColorVariant) =>
+              (v.sizeQuantities || []).some(
+                (sq: SizeQuantity) =>
+                  String(sq.size) === filterSize && Number(sq.quantity) > 0,
+              ),
           );
           if (!hasSize) return false;
         }
-        if (showOnlyNew && !(p as any).isNew) return false;
+        if (showOnlyNew && !(p as Product).isNew) return false;
         // when showing only new arrivals, exclude out-of-stock items
         if (showOnlyNew) {
-          const qty = Number((p as any).stock || 0);
+          const qty = Number((p as Product).stock || 0);
           if (qty <= 0) return false;
         }
         if (filterMinPrice || filterMaxPrice) {
@@ -362,14 +368,24 @@ export default function ProductsList({
           try {
             if (sortBy === "newest") {
               const aVal = Number(
-                (a.createdAt && (a.createdAt as any).toMillis?.()) ??
-                  a.createdAt ??
-                  0,
+                (a.createdAt &&
+                typeof a.createdAt === "object" &&
+                a.createdAt !== null &&
+                "toMillis" in a.createdAt &&
+                typeof (a.createdAt as { toMillis?: () => number }).toMillis ===
+                  "function"
+                  ? (a.createdAt as { toMillis: () => number }).toMillis()
+                  : a.createdAt) ?? 0,
               );
               const bVal = Number(
-                (b.createdAt && (b.createdAt as any).toMillis?.()) ??
-                  b.createdAt ??
-                  0,
+                (b.createdAt &&
+                typeof b.createdAt === "object" &&
+                b.createdAt !== null &&
+                "toMillis" in b.createdAt &&
+                typeof (b.createdAt as { toMillis?: () => number }).toMillis ===
+                  "function"
+                  ? (b.createdAt as { toMillis: () => number }).toMillis()
+                  : b.createdAt) ?? 0,
               );
               return bVal - aVal; // newest first
             }
@@ -402,7 +418,7 @@ export default function ProductsList({
         const inStock: Product[] = [];
         const outStock: Product[] = [];
         for (const p of list) {
-          const qty = Number((p as any).stock || 0);
+          const qty = Number((p as Product).stock || 0);
           if (qty > 0) inStock.push(p);
           else outStock.push(p);
         }
@@ -580,8 +596,18 @@ export default function ProductsList({
           <div className="text-sm">
             <label className="sr-only">Sort by</label>
             <select
+              title="sortBy"
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
+              onChange={(e) =>
+                setSortBy(
+                  e.target.value as
+                    | "newest"
+                    | "price-asc"
+                    | "price-desc"
+                    | "name-asc"
+                    | "name-desc",
+                )
+              }
               className="border border-gray-200 rounded px-2 py-1 text-sm bg-white"
             >
               <option value="newest">Sort: Newest</option>
@@ -818,12 +844,13 @@ export default function ProductsList({
                   Branch
                 </label>
                 <select
+                  title="filterBranch"
                   value={filterBranch}
                   onChange={(e) => setFilterBranch(e.target.value)}
                   className="w-full border border-gray-200 rounded px-2 py-1 text-sm"
                 >
                   <option value="all">All branches</option>
-                  {branches.map((sh: any) => (
+                  {branches.map((sh: { id: string; name: string }) => (
                     <option key={sh.id} value={sh.id}>
                       {sh.name}
                     </option>
@@ -836,6 +863,7 @@ export default function ProductsList({
                   Category
                 </label>
                 <select
+                  title="filterCategory"
                   value={filterCategory}
                   onChange={(e) => setFilterCategory(e.target.value)}
                   className="w-full border border-gray-200 rounded px-2 py-1 text-sm"
@@ -856,6 +884,7 @@ export default function ProductsList({
                   Size
                 </label>
                 <select
+                  title="filterSize"
                   value={filterSize}
                   onChange={(e) => setFilterSize(e.target.value)}
                   className="w-full border border-gray-200 rounded px-2 py-1 text-sm"
@@ -933,10 +962,10 @@ export default function ProductsList({
             </div>
           </div>
         </div>
-      )}
+    )}
 
-      {/* Pagination controls */}
-      <div className="flex items-center justify-center space-x-2 mt-6">
+    {/* Pagination controls */}
+    <div className="flex items-center justify-center space-x-2 mt-6">
         <button
           onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
           disabled={currentPage === 1}

@@ -2,7 +2,13 @@
 
 import React, { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  query,
+  orderBy,
+  Timestamp,
+} from "firebase/firestore";
 import { db } from "../../lib/firebase";
 
 type ProductItem = {
@@ -12,8 +18,21 @@ type ProductItem = {
   image?: string;
   groupImage?: string;
   stock?: number;
-  createdAt?: any;
+  createdAt?: Timestamp | number | Date | null;
   salesCount?: number;
+};
+
+type TransactionDoc = Record<string, unknown> & { createdAt?: unknown };
+type ProductDoc = Record<string, unknown> & {
+  unitPrice?: number;
+  price?: number;
+  colorVariants?: Array<Record<string, unknown>>;
+  image?: string;
+  groupImage?: string;
+  stock?: number;
+  createdAt?: unknown;
+  groupName?: string;
+  name?: string;
 };
 
 export default function BestSellersPage() {
@@ -48,15 +67,21 @@ export default function BestSellersPage() {
         const counts: Record<string, number> = {};
 
         txSnap.docs.forEach((d) => {
-          const data = d.data() as any;
+          const data = d.data() as TransactionDoc;
           // determine createdAt milliseconds
           let createdMs = Date.now();
           try {
-            const c = data.createdAt;
+            const c = data.createdAt as unknown;
             if (c) {
-              if (typeof c === "object" && c?.toMillis)
-                createdMs = c.toMillis();
-              else if (typeof c === "number") createdMs = c;
+              if (
+                typeof c === "object" &&
+                c !== null &&
+                "toMillis" in c &&
+                typeof (c as { toMillis?: () => number }).toMillis ===
+                  "function"
+              ) {
+                createdMs = (c as { toMillis: () => number }).toMillis();
+              } else if (typeof c === "number") createdMs = c as number;
               else createdMs = new Date(String(c)).getTime();
             }
           } catch (e) {
@@ -68,11 +93,16 @@ export default function BestSellersPage() {
           // Inspect arrays in transaction doc to find items
           Object.values(data).forEach((val) => {
             if (Array.isArray(val)) {
-              val.forEach((it: any) => {
+              val.forEach((it) => {
                 if (!it || typeof it !== "object") return;
+                const obj = it as Record<string, unknown>;
                 const pid =
-                  it.stockId || it.productId || it.id || it.itemId || it.sku;
-                const qty = Number(it.quantity ?? it.qty ?? 1) || 1;
+                  (obj.stockId as string) ||
+                  (obj.productId as string) ||
+                  (obj.id as string) ||
+                  (obj.itemId as string) ||
+                  (obj.sku as string);
+                const qty = Number(obj.quantity ?? obj.qty ?? 1) || 1;
                 if (pid) counts[pid] = (counts[pid] || 0) + qty;
               });
             }
@@ -86,17 +116,24 @@ export default function BestSellersPage() {
         );
         const prodSnap = await getDocs(prodQ);
         const prods: ProductItem[] = prodSnap.docs.map((d) => {
-          const data = d.data() as any;
+          const data = d.data() as ProductDoc;
           return {
             id: d.id,
-            name: data.groupName || data.name,
+            name: (data.groupName as string) || (data.name as string),
             price:
-              typeof data.unitPrice === "number" ? data.unitPrice : data.price,
+              typeof data.unitPrice === "number"
+                ? data.unitPrice
+                : (data.price as number | undefined),
             image:
-              data.colorVariants?.[0]?.image || data.image || data.groupImage,
-            groupImage: data.groupImage,
-            stock: data.stock || 0,
-            createdAt: data.createdAt || null,
+              ((data.colorVariants?.[0] as Record<string, unknown> | undefined)
+                ?.image as string | undefined) ||
+              (data.image as string | undefined) ||
+              (data.groupImage as string | undefined),
+            groupImage: data.groupImage as string | undefined,
+            stock: (data.stock as number) || 0,
+            createdAt:
+              (data.createdAt as Timestamp | number | Date | null | undefined) ||
+              null,
             salesCount: counts[d.id] || 0,
           };
         });
@@ -131,12 +168,29 @@ export default function BestSellersPage() {
         return arr.sort((a, b) => (b.name || "").localeCompare(a.name || ""));
       case "newest":
         return arr.sort((a, b) => {
-          const ta = a.createdAt
-            ? Number(a.createdAt?.seconds ?? a.createdAt)
-            : 0;
-          const tb = b.createdAt
-            ? Number(b.createdAt?.seconds ?? b.createdAt)
-            : 0;
+          const toMs = (v: number | Timestamp | Date | null | undefined) => {
+            if (!v) return 0;
+            if (typeof v === "number") return v;
+            if (v instanceof Date) return v.getTime();
+            if (
+              typeof v === "object" &&
+              "toMillis" in v &&
+              typeof (v as { toMillis?: unknown }).toMillis === "function"
+            )
+              return (v as { toMillis: () => number }).toMillis();
+            if (
+              typeof v === "object" &&
+              "seconds" in v &&
+              typeof (v as { seconds?: unknown }).seconds === "number"
+            ) {
+              const ts = v as { seconds: number; nanoseconds?: number };
+              return ts.seconds * 1000 + (ts.nanoseconds || 0) / 1e6;
+            }
+            return Number(new Date(String(v)).getTime()) || 0;
+          };
+
+          const ta = toMs(a.createdAt);
+          const tb = toMs(b.createdAt);
           return tb - ta;
         });
       case "sales":
@@ -165,8 +219,19 @@ export default function BestSellersPage() {
         <div>
           <label className="sr-only">Sort by</label>
           <select
+            title="sortBy"
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as any)}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+              setSortBy(
+                e.target.value as
+                  | "sales"
+                  | "price_asc"
+                  | "price_desc"
+                  | "name_asc"
+                  | "name_desc"
+                  | "newest"
+              )
+            }
             className="border border-gray-200 rounded px-2 py-1 text-sm bg-white"
           >
             <option value="sales">Best Selling</option>
