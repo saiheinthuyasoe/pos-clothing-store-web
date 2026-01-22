@@ -138,7 +138,13 @@ export default function Home() {
       <Carousel />
       <main className="mx-auto max-w-6xl py-12">
         <section id="products" className="mt-12 px-6">
-          <ProductsList />
+          <React.Suspense
+            fallback={
+              <div className="py-8 text-center">Loading products...</div>
+            }
+          >
+            <ProductsList />
+          </React.Suspense>
         </section>
       </main>
     </div>
