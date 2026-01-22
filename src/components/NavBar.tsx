@@ -2,11 +2,98 @@
 
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
 
 export default function NavBar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const isActive = (p: string) => {
+    if (!pathname) return false;
+    return pathname === p;
+  };
+
+  const navLinkClass = (p: string, extra = "") =>
+    `text-gray-700 hover:underline ${isActive(p) ? "text-black font-semibold underline" : ""} ${extra}`.trim();
+
+  // Update URL query without closing UI (used for live typing)
+  const updateUrlQuery = (term: string) => {
+    try {
+      if (
+        pathname === "/" ||
+        pathname === "/new-arrivals" ||
+        pathname?.startsWith("/product/")
+      ) {
+        const base = pathname || "/";
+        const newUrl = term ? `${base}?q=${encodeURIComponent(term)}` : base;
+        // replace history state without triggering navigation
+        if (typeof window !== "undefined") {
+          window.history.replaceState(null, "", newUrl);
+          try {
+            window.dispatchEvent(
+              new CustomEvent("app:search", { detail: term }),
+            );
+          } catch (e) {
+            // ignore
+          }
+        }
+      } else {
+        // don't auto-redirect to home when live-typing with an empty query
+        if (!term) return;
+        router.push(`/search?q=${encodeURIComponent(term)}`);
+      }
+    } catch (e) {
+      // ignore
+    }
+  };
+
+  // Commit search (Enter or explicit click) — navigate and close UI
+  const commitSearch = (q?: string) => {
+    const term = (q ?? searchQuery).trim();
+    try {
+      if (
+        pathname === "/" ||
+        pathname === "/new-arrivals" ||
+        pathname?.startsWith("/product/")
+      ) {
+        const base = pathname || "/";
+        const newUrl = term ? `${base}?q=${encodeURIComponent(term)}` : base;
+        try {
+          router.replace(newUrl);
+        } finally {
+          if (typeof window !== "undefined") {
+            try {
+              window.dispatchEvent(
+                new CustomEvent("app:search", { detail: term }),
+              );
+            } catch (e) {
+              // ignore
+            }
+          }
+        }
+      } else {
+        if (!term) router.push("/");
+        else router.push(`/search?q=${encodeURIComponent(term)}`);
+      }
+    } finally {
+      setSearchOpen(false);
+      setMenuOpen(false);
+    }
+  };
+
+  // live search debounce when typing — updates URL only, keeps search open
+  React.useEffect(() => {
+    const id = setTimeout(() => {
+      const term = searchQuery.trim();
+      updateUrlQuery(term);
+    }, 350);
+    return () => clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, pathname]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -16,12 +103,13 @@ export default function NavBar() {
   return (
     <nav
       className={`sticky top-0 z-50 bg-white transition-shadow ${
-        scrolled ? "shadow-md" : "border-b"
+        scrolled ? "shadow-md" : "shadow-sm"
       }`}
     >
       <div className="mx-auto max-w-6xl flex items-center justify-between p-3">
         {/* Left: hamburger / collapse menu */}
         <div className="flex items-center">
+          {/* Mobile hamburger (visible on small screens) */}
           <button
             aria-label="Toggle menu"
             onClick={() => setMenuOpen((s) => !s)}
@@ -43,15 +131,27 @@ export default function NavBar() {
             </svg>
           </button>
 
-          {/* desktop menu (hidden on small screens) */}
-          <div className="hidden md:flex items-center space-x-4 text-sm ml-2">
-            <a href="#" className="text-gray-700 hover:text-black">
-              Home
-            </a>
-            <a href="#" className="text-gray-700 hover:text-black">
-              Location
-            </a>
-          </div>
+          {/* Desktop menu button (opens offcanvas) */}
+          <button
+            aria-label="Open menu"
+            onClick={() => setMenuOpen((s) => !s)}
+            className="p-2 rounded-md hover:bg-gray-100 hidden md:inline-flex"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6 text-gray-700"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            </svg>
+          </button>
         </div>
 
         {/* Center: logo + shop name */}
@@ -72,24 +172,36 @@ export default function NavBar() {
 
         {/* Right: search collapse */}
         <div className="flex items-center space-x-2">
-          <div
-            className={`hidden md:flex items-center border rounded-md px-2 py-1`}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-4 w-4 text-gray-500"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+          <div className="hidden md:flex items-center border rounded-md px-2 py-1">
+            <button
+              aria-label="Search"
+              onClick={() => commitSearch()}
+              className="p-0 m-0"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"
-              />
-            </svg>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4 text-gray-500"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"
+                />
+              </svg>
+            </button>
             <input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  commitSearch();
+                }
+              }}
               placeholder="Search products"
               className="ml-2 outline-none text-sm"
             />
@@ -119,19 +231,55 @@ export default function NavBar() {
         </div>
       </div>
 
-      {/* Mobile menu drawer */}
-      {menuOpen && (
-        <div className="md:hidden border-t bg-white">
+      {/* Offcanvas menu (responsive) - keep mounted for smooth animations */}
+      <>
+        <div
+          className={`fixed inset-0 bg-black/40 z-40 transition-opacity duration-300 ${menuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
+          onClick={() => setMenuOpen(false)}
+          aria-hidden
+        />
+
+        <div
+          className={`fixed inset-y-0 left-0 z-50 w-72 bg-white shadow-lg transform transition-transform duration-300 ${menuOpen ? "translate-x-0" : "-translate-x-full"}`}
+        >
+          <div className="px-4 py-4 border-b flex items-center justify-between">
+            <div className="font-semibold">Menu</div>
+            <button
+              aria-label="Close menu"
+              onClick={() => setMenuOpen(false)}
+              className="p-1 rounded hover:bg-gray-100"
+            >
+              ✕
+            </button>
+          </div>
           <div className="px-4 py-3 space-y-2">
-            <a href="#" className="block text-gray-700">
+            <Link href="/" className={navLinkClass("/", "block")}>
               Home
-            </a>
+            </Link>
+            <Link
+              href="/best-sellers"
+              className={navLinkClass("/best-sellers", "block")}
+            >
+              Best Seller
+            </Link>
+            <Link
+              href="/new-arrivals"
+              className={navLinkClass("/new-arrivals", "block")}
+            >
+              New Arrivals
+            </Link>
+            <Link
+              href="/terms-and-conditions"
+              className={navLinkClass("/terms-and-conditions", "block")}
+            >
+              Terms & Conditions
+            </Link>
             <a href="#" className="block text-gray-700">
               Location
             </a>
           </div>
         </div>
-      )}
+      </>
 
       {/* Mobile search bar */}
       {searchOpen && (
@@ -139,6 +287,14 @@ export default function NavBar() {
           <div className="flex items-center space-x-2">
             <input
               autoFocus
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  commitSearch();
+                }
+              }}
               placeholder="Search products"
               className="w-full border rounded-md px-3 py-2 text-sm outline-none"
             />

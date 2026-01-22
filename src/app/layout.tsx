@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import NavBar from "../components/NavBar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,8 +27,39 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        style={{ backgroundColor: "#ffffff", color: "#111827" }}
       >
-        {children}
+        <NavBar />
+        <div className="min-h-[60vh]">{children}</div>
+
+        <footer className="w-full bg-gray-50 border-t mt-8">
+          <div className="max-w-6xl mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-gray-700">
+            <div>
+              <div className="font-semibold mb-2">Shan Yoma</div>
+              <div>Along Johnnie street, Tachileik.</div>
+              <div className="mt-2">09451922223, 09758113774</div>
+            </div>
+
+            <div>
+              <div className="font-semibold mb-2">Nitchin Pagoda</div>
+              <div>Wunmaing Rd, San Saing, Tachileik.</div>
+              <div className="mt-2">09451922223, 09758113774</div>
+            </div>
+
+            <div>
+              <div className="font-semibold mb-2">Legal</div>
+              <div className="mb-2">
+                <a
+                  href="/terms-and-conditions"
+                  className="text-blue-600 underline"
+                >
+                  Terms &amp; Conditions
+                </a>
+              </div>
+              <div className="text-gray-500">2026 All rights reserved.</div>
+            </div>
+          </div>
+        </footer>
       </body>
     </html>
   );

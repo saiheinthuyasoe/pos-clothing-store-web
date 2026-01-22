@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import ProductsList from "../components/ProductsList";
-import NavBar from "../components/NavBar";
 
 function Carousel() {
   type Item = {
@@ -136,7 +135,6 @@ function Carousel() {
 export default function Home() {
   return (
     <div className="min-h-screen bg-white font-sans text-black">
-      <NavBar />
       <Carousel />
       <main className="mx-auto max-w-6xl py-12">
         <section id="products" className="mt-12 px-6">
