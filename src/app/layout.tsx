@@ -32,31 +32,201 @@ export default function RootLayout({
         <NavBar />
         <div className="min-h-[60vh]">{children}</div>
 
-        <footer className="w-full bg-gray-50 border-t mt-8">
-          <div className="max-w-6xl mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-gray-700">
-            <div>
-              <div className="font-semibold mb-2">Shan Yoma</div>
-              <div>Along Johnnie street, Tachileik.</div>
-              <div className="mt-2">09451922223, 09758113774</div>
-            </div>
-
-            <div>
-              <div className="font-semibold mb-2">Nitchin Pagoda</div>
-              <div>Wunmaing Rd, San Saing, Tachileik.</div>
-              <div className="mt-2">09451922223, 09758113774</div>
-            </div>
-
-            <div>
-              <div className="font-semibold mb-2">Legal</div>
-              <div className="mb-2">
-                <a
-                  href="/terms-and-conditions"
-                  className="text-blue-600 underline"
-                >
-                  Terms &amp; Conditions
-                </a>
+        <footer className="w-full bg-[#FFF7ED] mt-8 text-[#1f2937]">
+          <div className="max-w-6xl mx-auto px-4 py-8">
+            <div className="flex flex-col md:flex-row md:justify-between gap-8">
+              <div className="md:w-1/3">
+                <h4 className="font-semibold text-lg mb-2">Shan Yoma</h4>
+                <p className="text-sm flex items-start gap-2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4 text-amber-600 flex-shrink-0"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="1.5"
+                      d="M21 10c0 6-9 13-9 13S3 16 3 10a9 9 0 1118 0z"
+                    />
+                  </svg>
+                  <span>Along Johnnie street, Tachileik.</span>
+                </p>
+                <p className="mt-2 text-sm">
+                  <a
+                    href="tel:09451922223"
+                    className="text-amber-600 underline flex items-center gap-2"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4 text-amber-600"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="1.5"
+                        d="M3 5a2 2 0 012-2h3.28a1 1 0 01.95.68l1.2 3.6a1 1 0 01-.27 1.02L8.4 11.6a12.07 12.07 0 005 5l1.3-1.3a1 1 0 011.02-.27l3.6 1.2a1 1 0 01.68.95V19a2 2 0 01-2 2H19c-9.39 0-16-6.61-16-16V5z"
+                      />
+                    </svg>
+                    09451922223
+                  </a>
+                  
+                  <a
+                    href="tel:09758113774"
+                    className="text-amber-600 underline flex items-center gap-2"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4 text-amber-600"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="1.5"
+                        d="M3 5a2 2 0 012-2h3.28a1 1 0 01.95.68l1.2 3.6a1 1 0 01-.27 1.02L8.4 11.6a12.07 12.07 0 005 5l1.3-1.3a1 1 0 011.02-.27l3.6 1.2a1 1 0 01.68.95V19a2 2 0 01-2 2H19c-9.39 0-16-6.61-16-16V5z"
+                      />
+                    </svg>
+                    09758113774
+                  </a>
+                </p>
               </div>
-              <div className="text-gray-500">2026 All rights reserved.</div>
+
+              <div className="md:w-1/3">
+                <h4 className="font-semibold text-lg mb-2">Nitchin Pagoda</h4>
+                <p className="text-sm flex items-start gap-2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4 text-amber-600 flex-shrink-0"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="1.5"
+                      d="M21 10c0 6-9 13-9 13S3 16 3 10a9 9 0 1118 0z"
+                    />
+                  </svg>
+                  <span>Wunmaing Rd, San Saing, Tachileik.</span>
+                </p>
+                <p className="mt-2 text-sm">
+                  <a
+                    href="tel:09451922223"
+                    className="text-amber-600 underline flex items-center gap-2"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4 text-amber-600"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="1.5"
+                        d="M3 5a2 2 0 012-2h3.28a1 1 0 01.95.68l1.2 3.6a1 1 0 01-.27 1.02L8.4 11.6a12.07 12.07 0 005 5l1.3-1.3a1 1 0 011.02-.27l3.6 1.2a1 1 0 01.68.95V19a2 2 0 01-2 2H19c-9.39 0-16-6.61-16-16V5z"
+                      />
+                    </svg>
+                    09451922223
+                  </a>
+                  
+                  <a
+                    href="tel:09758113774"
+                    className="text-amber-600 underline flex items-center gap-2"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4 text-amber-600"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="1.5"
+                        d="M3 5a2 2 0 012-2h3.28a1 1 0 01.95.68l1.2 3.6a1 1 0 01-.27 1.02L8.4 11.6a12.07 12.07 0 005 5l1.3-1.3a1 1 0 011.02-.27l3.6 1.2a1 1 0 01.68.95V19a2 2 0 01-2 2H19c-9.39 0-16-6.61-16-16V5z"
+                      />
+                    </svg>
+                    09758113774
+                  </a>
+                </p>
+              </div>
+
+              <div className="md:w-1/3">
+                <h4 className="font-semibold text-lg mb-2">Legal</h4>
+                <p className="text-sm mb-2">
+                  <a
+                    href="/terms-and-conditions"
+                    className="text-amber-600 underline"
+                  >
+                    Terms &amp; Conditions
+                  </a>
+                </p>
+                <div className="mt-4 flex items-center space-x-3">
+                  <a
+                    href="#"
+                    aria-label="Instagram"
+                    className="text-gray-700 hover:text-amber-600"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                    >
+                      <rect x="3" y="3" width="18" height="18" rx="4" ry="4" />
+                      <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z" />
+                      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+                    </svg>
+                  </a>
+                  <a
+                    href="#"
+                    aria-label="Facebook"
+                    className="text-gray-700 hover:text-amber-600"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                    >
+                      <path d="M22 12a10 10 0 10-11.5 9.9v-7h-2.2V12h2.2V9.8c0-2.2 1.3-3.4 3.3-3.4.95 0 1.95.17 1.95.17v2.1h-1.07c-1.05 0-1.37.65-1.37 1.32V12h2.34l-.37 2.9h-1.97v7A10 10 0 0022 12z" />
+                    </svg>
+                  </a>
+                  <a
+                    href="#"
+                    aria-label="TikTok"
+                    className="text-gray-700 hover:text-amber-600"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                    >
+                      <path d="M9 8v8a4 4 0 104 4V9h2a4 4 0 10-2-1.732V8h-4z" />
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 border-t border-gray-300 pt-4">
+              <div className="text-center text-sm text-gray-600">
+                © 2026 Swe Trendy Hub. All rights reserved.
+              </div>
             </div>
           </div>
         </footer>

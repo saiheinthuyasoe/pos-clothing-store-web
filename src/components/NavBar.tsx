@@ -18,7 +18,7 @@ export default function NavBar() {
   };
 
   const navLinkClass = (p: string, extra = "") =>
-    `text-gray-700 hover:underline ${isActive(p) ? "text-black font-semibold underline" : ""} ${extra}`.trim();
+    `text-gray-800 hover:text-amber-600 ${isActive(p) ? "text-[#111827] font-semibold underline decoration-amber-300" : ""} ${extra}`.trim();
 
   // Update URL query without closing UI (used for live typing)
   const updateUrlQuery = (term: string) => {
@@ -102,11 +102,12 @@ export default function NavBar() {
   }, []);
   return (
     <nav
-      className={`sticky top-0 z-50 bg-white transition-shadow ${
+      className={`sticky top-0 z-50 bg-[#FFF7ED] transition-shadow ${
         scrolled ? "shadow-md" : "shadow-sm"
       }`}
+      aria-label="Main navigation"
     >
-      <div className="mx-auto max-w-6xl flex items-center justify-between p-3">
+      <div className="mx-auto max-w-6xl flex items-center justify-between p-4">
         {/* Left: hamburger / collapse menu */}
         <div className="flex items-center">
           {/* Mobile hamburger (visible on small screens) */}
@@ -157,14 +158,14 @@ export default function NavBar() {
         {/* Center: logo + shop name */}
         <div className="flex-1 flex items-center justify-center md:justify-center">
           <Link href="/" className="flex items-center space-x-3">
-            <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+            {/* <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center overflow-hidden">
               <img
                 src="/logo.png"
                 alt="logo"
                 className="w-full h-full object-cover"
               />
-            </div>
-            <span className="text-lg font-semibold text-black">
+            </div> */}
+            <span className="text-2xl md:text-3xl font-serif tracking-tight text-[#1f2937]">
               Swe Trendy Hub
             </span>
           </Link>
@@ -172,7 +173,7 @@ export default function NavBar() {
 
         {/* Right: search collapse */}
         <div className="flex items-center space-x-2">
-          <div className="hidden md:flex items-center border rounded-md px-2 py-1">
+          <div className="hidden md:flex items-center border rounded-md px-3 py-1 bg-transparent">
             <button
               aria-label="Search"
               onClick={() => commitSearch()}
@@ -203,7 +204,7 @@ export default function NavBar() {
                 }
               }}
               placeholder="Search products"
-              className="ml-2 outline-none text-sm"
+              className="ml-3 outline-none text-sm text-gray-700 placeholder-gray-400"
             />
           </div>
 
@@ -240,43 +241,78 @@ export default function NavBar() {
         />
 
         <div
-          className={`fixed inset-y-0 left-0 z-50 w-72 bg-white shadow-lg transform transition-transform duration-300 ${menuOpen ? "translate-x-0" : "-translate-x-full"}`}
+          className={`fixed inset-y-0 left-0 z-50 w-80 bg-[#FFF7ED] shadow-lg transform transition-transform duration-300 ${menuOpen ? "translate-x-0" : "-translate-x-full"}`}
         >
-          <div className="px-4 py-4 border-b flex items-center justify-between">
-            <div className="font-semibold">Menu</div>
+          <div className="px-4 py-5 border-b flex items-center justify-between">
+            <Link href="/" className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center overflow-hidden">
+                <img
+                  src="/logo.png"
+                  alt="logo"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div>
+                <div className="text-lg font-serif text-[#111827]">
+                  Swe Trendy Hub
+                </div>
+                {/* <div className="text-xs text-gray-600">
+                  Clothing & Accessories
+                </div> */}
+              </div>
+            </Link>
             <button
               aria-label="Close menu"
               onClick={() => setMenuOpen(false)}
-              className="p-1 rounded hover:bg-gray-100"
+              className="p-2 rounded-md hover:bg-amber-50 text-gray-700"
             >
               ✕
             </button>
           </div>
-          <div className="px-4 py-3 space-y-2">
-            <Link href="/" className={navLinkClass("/", "block")}>
+
+          <nav className="px-4 py-4 space-y-1">
+            <Link
+              href="/"
+              className={navLinkClass(
+                "/",
+                "block px-3 py-2 rounded-md text-base hover:bg-amber-50",
+              )}
+            >
               Home
             </Link>
             <Link
-              href="/best-sellers"
-              className={navLinkClass("/best-sellers", "block")}
-            >
-              Best Seller
-            </Link>
-            <Link
               href="/new-arrivals"
-              className={navLinkClass("/new-arrivals", "block")}
+              className={navLinkClass(
+                "/new-arrivals",
+                "block px-3 py-2 rounded-md text-base hover:bg-amber-50",
+              )}
             >
               New Arrivals
             </Link>
             <Link
+              href="/best-sellers"
+              className={navLinkClass(
+                "/best-sellers",
+                "block px-3 py-2 rounded-md text-base hover:bg-amber-50",
+              )}
+            >
+              Best Seller
+            </Link>
+            <Link
               href="/terms-and-conditions"
-              className={navLinkClass("/terms-and-conditions", "block")}
+              className={navLinkClass(
+                "/terms-and-conditions",
+                "block px-3 py-2 rounded-md text-base hover:bg-amber-50",
+              )}
             >
               Terms & Conditions
             </Link>
-            <a href="#" className="block text-gray-700">
-              Location
-            </a>
+          </nav>
+
+          <div className="mt-auto px-4 py-4 border-t border-gray-300 text-sm text-gray-700">
+            <div className="font-semibold mb-1">Contact</div>
+            <div>Shan Yoma — Along Johnnie street, Tachileik</div>
+            <div className="mt-1">09451922223, 09758113774</div>
           </div>
         </div>
       </>
