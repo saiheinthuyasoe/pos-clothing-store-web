@@ -13,11 +13,7 @@ export default function Page() {
           </h1>
 
           <div className="max-w-[1100px] mx-auto pb-12">
-            <React.Suspense
-              fallback={<div className="py-8 text-center">Loading...</div>}
-            >
-              <ProductsList showOnlyNew itemsPerPageDefault={40} hideFilters />
-            </React.Suspense>
+            <ProductsList showOnlyNew itemsPerPageDefault={40} hideFilters />
           </div>
         </section>
       </main>

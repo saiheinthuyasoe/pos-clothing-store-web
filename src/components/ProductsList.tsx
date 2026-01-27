@@ -109,6 +109,9 @@ export default function ProductsList({
   const [filterMaxPrice, setFilterMaxPrice] = useState<string>("");
   const [filterCurrency, setFilterCurrency] = useState<"THB" | "MMK">("THB");
   const [filterSize, setFilterSize] = useState<string>("");
+  const [expandedBranch, setExpandedBranch] = useState<boolean>(true);
+  const [expandedCategory, setExpandedCategory] = useState<boolean>(false);
+  const [expandedSize, setExpandedSize] = useState<boolean>(false);
   const [sortBy, setSortBy] = useState<
     "newest" | "price-asc" | "price-desc" | "name-asc" | "name-desc"
   >("newest");
@@ -448,7 +451,20 @@ export default function ProductsList({
   const endIndex = startIndex + itemsPerPage;
   const visibleProducts = sortedProducts.slice(startIndex, endIndex);
 
-  if (loading) return <div className="p-8">Loading products…</div>;
+  if (loading)
+    return (
+      <div className="grid grid-cols-2 gap-2 px-2 py-4 sm:grid-cols-2 md:gap-4 md:px-6 md:py-6 md:grid-cols-2 lg:gap-6 lg:px-6 lg:grid-cols-3 xl:gap-8 xl:px-6 xl:grid-cols-4 bg-white md:max-w-[1000px] md:mx-auto lg:max-w-[1400px] lg:mx-auto xl:max-w-[1800px] xl:mx-auto">
+        {Array.from({ length: Math.max(4, itemsPerPage) }).map((_, i) => (
+          <div key={i} className="animate-pulse bg-white">
+            <div className="w-full aspect-[5/8] bg-gray-100 rounded-md" />
+            <div className="px-2 py-3">
+              <div className="h-4 bg-gray-100 rounded w-3/4 mb-2" />
+              <div className="h-3 bg-gray-100 rounded w-1/2" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
   if (error) return <div className="p-8 text-red-600">Error: {error}</div>;
   if (!products || products.length === 0)
     return <div className="p-8">No products found.</div>;
@@ -489,15 +505,15 @@ export default function ProductsList({
 
   return (
     <>
-      <div className="flex items-center justify-between px-2 py-2 md:px-6 md:py-4">
-        <div className="flex items-center space-x-3">
+      <div className="flex flex-col md:flex-row md:items-center justify-between px-2 py-2 md:px-6 md:py-4">
+        <div className="flex flex-col md:flex-row md:items-center">
           <div className="text-sm text-gray-600">
             {filteredProducts ? `${filteredProducts.length} items` : ""}
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex flex-wrap items-center gap-2 mt-2 ml-3 md:mt-0">
             {filterBranch !== "all" && (
-              <span className="inline-flex items-center space-x-2 bg-amber-100 text-amber-900 text-sm px-3 py-1 rounded">
+              <span className="inline-flex items-center space-x-2 bg-pink-300 text-white text-sm px-3 py-1 rounded">
                 <span>
                   {shops.find((s) => s.id === filterBranch)?.name ||
                     filterBranch}
@@ -513,7 +529,7 @@ export default function ProductsList({
             )}
 
             {filterCategory !== "all" && (
-              <span className="inline-flex items-center space-x-2 bg-amber-100 text-amber-900 text-sm px-3 py-1 rounded">
+              <span className="inline-flex items-center space-x-2 bg-pink-300 text-white text-sm px-3 py-1 rounded">
                 <span>{filterCategory}</span>
                 <button
                   onClick={() => setFilterCategory("all")}
@@ -528,7 +544,7 @@ export default function ProductsList({
             {/* color filter removed */}
 
             {filterSize && (
-              <span className="inline-flex items-center space-x-2 bg-amber-100 text-amber-900 text-sm px-3 py-1 rounded">
+              <span className="inline-flex items-center space-x-2 bg-pink-300 text-white text-sm px-3 py-1 rounded">
                 <span>{filterSize}</span>
                 <button
                   onClick={() => setFilterSize("")}
@@ -541,10 +557,10 @@ export default function ProductsList({
             )}
 
             {(filterMinPrice || filterMaxPrice) && (
-              <span className="inline-flex items-center space-x-2 bg-amber-100 text-amber-900 text-sm px-3 py-1 rounded">
+              <span className="inline-flex items-center space-x-2 bg-pink-300 text-white text-sm px-3 py-1 rounded">
                 <span>
-                  {filterCurrency} {filterMinPrice || "-"} -{" "}
-                  {filterMaxPrice || "-"}
+                  {filterCurrency === "THB" ? "฿" : "Ks"}{" "}
+                  {filterMinPrice || "-"} - {filterMaxPrice || "-"}
                 </span>
                 <button
                   onClick={() => {
@@ -573,21 +589,38 @@ export default function ProductsList({
                   setFilterMaxPrice("");
                   setFilterCurrency("THB");
                 }}
-                className="text-sm text-blue-600 underline ml-2"
+                className="text-md text-red-600 underline md:ml-2 ml-0"
               >
                 Clear all
               </button>
             )}
           </div>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 mt-3 md:mt-0">
           <div>
             {!hideFilters && (
               <button
                 onClick={() => setShowFilter((s) => !s)}
-                className="px-3 py-1 rounded border border-gray-300 bg-white text-sm hover:bg-gray-50"
+                aria-expanded={showFilter}
+                aria-controls="filters-panel"
+                className="px-3 py-1 rounded border border-gray-300 bg-white text-sm hover:bg-gray-50 inline-flex items-center space-x-2"
               >
-                Filters {showFilter ? "▲" : "▼"}
+                <span>Filters</span>
+                <svg
+                  className={`h-4 w-4 transform transition-transform duration-200 ${showFilter ? "rotate-180" : "rotate-0"}`}
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden
+                >
+                  <path
+                    d="M5 8.5L10 13.5L15 8.5"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
               </button>
             )}
           </div>
@@ -595,27 +628,44 @@ export default function ProductsList({
           {/* Sort control */}
           <div className="text-sm">
             <label className="sr-only">Sort by</label>
-            <select
-              title="sortBy"
-              value={sortBy}
-              onChange={(e) =>
-                setSortBy(
-                  e.target.value as
-                    | "newest"
-                    | "price-asc"
-                    | "price-desc"
-                    | "name-asc"
-                    | "name-desc",
-                )
-              }
-              className="border border-gray-200 rounded px-2 py-1 text-sm bg-white"
-            >
-              <option value="newest">Sort: Newest</option>
-              <option value="price-asc">Price: Low → High</option>
-              <option value="price-desc">Price: High → Low</option>
-              <option value="name-asc">Name: A → Z</option>
-              <option value="name-desc">Name: Z → A</option>
-            </select>
+            <div className="relative inline-flex items-center">
+              <select
+                title="sortBy"
+                value={sortBy}
+                onChange={(e) =>
+                  setSortBy(
+                    e.target.value as
+                      | "newest"
+                      | "price-asc"
+                      | "price-desc"
+                      | "name-asc"
+                      | "name-desc",
+                  )
+                }
+                className="peer border border-gray-200 rounded px-2 py-1 text-sm bg-white appearance-none pr-8"
+              >
+                <option value="newest">Sort by: Newest</option>
+                <option value="price-asc">Price: Low → High</option>
+                <option value="price-desc">Price: High → Low</option>
+                <option value="name-asc">Name: A → Z</option>
+                <option value="name-desc">Name: Z → A</option>
+              </select>
+              <svg
+                className="h-4 w-4 absolute right-2 transform transition-transform duration-200 peer-focus:rotate-180 pointer-events-none text-gray-600"
+                viewBox="0 0 20 20"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-hidden
+              >
+                <path
+                  d="M5 8.5L10 13.5L15 8.5"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
           </div>
         </div>
       </div>
@@ -705,7 +755,7 @@ export default function ProductsList({
                   )}
                 </div>
 
-                <div className="p-0">
+                <div className="pt-3">
                   <h4 className="font-semibold text-gray-900 text-base mb-1">
                     {p.name && p.name.length > 24
                       ? `${p.name.substring(0, 24)}...`
@@ -808,164 +858,278 @@ export default function ProductsList({
       </div>
       {/* Slide-in filter panel (hidden when `hideFilters`) */}
       {!hideFilters && (
-        <div
-          className={`fixed inset-y-0 left-0 z-50 w-80 bg-white shadow-lg transform transition-transform duration-300 ${
-            showFilter ? "translate-x-0" : "-translate-x-full"
-          }`}
-          aria-hidden={!showFilter}
-        >
-          <div className="p-4 h-full flex flex-col">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-medium">Filters</h3>
-              <button
-                onClick={() => setShowFilter(false)}
-                aria-label="Close filters"
-                className="text-gray-500 hover:text-gray-700 p-1 rounded"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M6 6l12 12" />
-                  <path d="M6 18L18 6" />
-                </svg>
-              </button>
-            </div>
+        <>
+          <div
+            className={`fixed inset-0 bg-black/40 z-40 transition-opacity duration-300 ${
+              showFilter
+                ? "opacity-100 pointer-events-auto"
+                : "opacity-0 pointer-events-none"
+            }`}
+            onClick={() => setShowFilter(false)}
+            aria-hidden
+          />
 
-            <div className="space-y-4 overflow-auto">
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  Branch
-                </label>
-                <select
-                  title="filterBranch"
-                  value={filterBranch}
-                  onChange={(e) => setFilterBranch(e.target.value)}
-                  className="w-full border border-gray-200 rounded px-2 py-1 text-sm"
-                >
-                  <option value="all">All branches</option>
-                  {branches.map((sh: { id: string; name: string }) => (
-                    <option key={sh.id} value={sh.id}>
-                      {sh.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  Category
-                </label>
-                <select
-                  title="filterCategory"
-                  value={filterCategory}
-                  onChange={(e) => setFilterCategory(e.target.value)}
-                  className="w-full border border-gray-200 rounded px-2 py-1 text-sm"
-                >
-                  <option value="all">All categories</option>
-                  {categories.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* color filter removed */}
-
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  Size
-                </label>
-                <select
-                  title="filterSize"
-                  value={filterSize}
-                  onChange={(e) => setFilterSize(e.target.value)}
-                  className="w-full border border-gray-200 rounded px-2 py-1 text-sm"
-                >
-                  <option value="">Any size</option>
-                  {sizes.map((s) => (
-                    <option key={String(s)} value={String(s)}>
-                      {String(s)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  Price ({filterCurrency})
-                </label>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="number"
-                    value={filterMinPrice}
-                    onChange={(e) => setFilterMinPrice(e.target.value)}
-                    placeholder="Min"
-                    className="w-1/2 border border-gray-200 rounded px-2 py-1 text-sm"
-                  />
-                  <input
-                    type="number"
-                    value={filterMaxPrice}
-                    onChange={(e) => setFilterMaxPrice(e.target.value)}
-                    placeholder="Max"
-                    className="w-1/2 border border-gray-200 rounded px-2 py-1 text-sm"
-                  />
-                </div>
-                <div className="mt-2 flex items-center space-x-2 text-sm">
-                  <label className="inline-flex items-center">
-                    <input
-                      type="radio"
-                      name="currency"
-                      checked={filterCurrency === "THB"}
-                      onChange={() => setFilterCurrency("THB")}
-                      className="mr-1"
-                    />
-                    THB
-                  </label>
-                  <label className="inline-flex items-center">
-                    <input
-                      type="radio"
-                      name="currency"
-                      checked={filterCurrency === "MMK"}
-                      onChange={() => setFilterCurrency("MMK")}
-                      className="mr-1"
-                    />
-                    MMK
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-auto pt-4">
-              <div className="flex items-center space-x-2">
+          <div
+            className={`fixed inset-y-0 left-0 z-50 w-70 bg-white shadow-lg transform transition-transform duration-300 ${
+              showFilter ? "translate-x-0" : "-translate-x-full"
+            }`}
+            aria-hidden={!showFilter}
+          >
+            <div className="p-4 h-full flex flex-col">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-3xl font-medium font-beatrice">Filters</h3>
                 <button
-                  onClick={() => {
-                    setFilterBranch("all");
-                    setFilterCategory("all");
-                    setFilterSize("");
-                    setFilterMinPrice("");
-                    setFilterMaxPrice("");
-                    setFilterCurrency("THB");
-                  }}
-                  className="px-3 py-2 rounded border border-gray-300 bg-white text-sm"
+                  onClick={() => setShowFilter(false)}
+                  aria-label="Close filters"
+                  className="text-gray-500 hover:text-gray-700 p-1 rounded"
                 >
-                  Reset
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M6 6l12 12" />
+                    <path d="M6 18L18 6" />
+                  </svg>
                 </button>
+              </div>
+
+              <div className="space-y-4 overflow-auto pr-4 pt-6 pb-6">
+                <div className="pb-3">
+                  <button
+                    type="button"
+                    onClick={() => setExpandedBranch((s) => !s)}
+                    aria-expanded={expandedBranch}
+                    className="w-full flex items-center justify-between text-sm font-medium text-gray-800"
+                  >
+                    <span>Branch</span>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      className={`transform transition-transform h-6 w-6 ${expandedBranch ? "rotate-180" : "rotate-0"}`}
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden
+                    >
+                      <path d="M6 9l6 6 6-6" />
+                    </svg>
+                  </button>
+
+                  <div
+                    className={`mt-2 space-y-2 ${expandedBranch ? "block" : "hidden"}`}
+                  >
+                    <button
+                      onClick={() => setFilterBranch("all")}
+                      className={`w-full text-left px-3 py-2 rounded text-sm ${filterBranch === "all" ? "bg-pink-300 text-white" : "bg-white text-gray-700 border border-gray-200"}`}
+                    >
+                      All branches
+                    </button>
+
+                    {branches.map((sh: { id: string; name: string }) => (
+                      <button
+                        key={sh.id}
+                        onClick={() => setFilterBranch(sh.id)}
+                        className={`w-full text-left px-3 py-2 rounded text-sm ${filterBranch === sh.id ? "bg-pink-300 text-white" : "bg-white text-gray-700 border border-gray-200"}`}
+                      >
+                        {sh.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="border-t border-dashed border-gray-300 my-2" />
+
+                <div className="pt-3 pb-3">
+                  <button
+                    type="button"
+                    onClick={() => setExpandedCategory((s) => !s)}
+                    aria-expanded={expandedCategory}
+                    className="w-full flex items-center justify-between text-sm font-medium text-gray-800"
+                  >
+                    <span>Category</span>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      className={`transform transition-transform h-6 w-6 ${expandedCategory ? "rotate-180" : "rotate-0"}`}
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden
+                    >
+                      <path d="M6 9l6 6 6-6" />
+                    </svg>
+                  </button>
+
+                  <div
+                    className={`mt-2 space-y-2 ${expandedCategory ? "block" : "hidden"}`}
+                  >
+                    <button
+                      onClick={() => setFilterCategory("all")}
+                      className={`w-full text-left px-3 py-2 rounded text-sm ${filterCategory === "all" ? "bg-pink-300 text-white" : "bg-white text-gray-700 border border-gray-200"}`}
+                    >
+                      All categories
+                    </button>
+                    {categories.map((c) => (
+                      <button
+                        key={c}
+                        onClick={() => setFilterCategory(c)}
+                        className={`w-full text-left px-3 py-2 rounded text-sm ${filterCategory === c ? "bg-pink-300 text-white" : "bg-white text-gray-700 border border-gray-200"}`}
+                      >
+                        {c}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="border-t border-dashed border-gray-300 my-2" />
+
+                {/* color filter removed */}
+
+                <div className="pt-3 pb-3">
+                  <button
+                    type="button"
+                    onClick={() => setExpandedSize((s) => !s)}
+                    aria-expanded={expandedSize}
+                    className="w-full flex items-center justify-between text-sm font-medium text-gray-800"
+                  >
+                    <span>Size</span>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      className={`transform transition-transform h-6 w-6 ${expandedSize ? "rotate-180" : "rotate-0"}`}
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden
+                    >
+                      <path d="M6 9l6 6 6-6" />
+                    </svg>
+                  </button>
+
+                  <div className={`mt-2 ${expandedSize ? "block" : "hidden"}`}>
+                    <div className="grid grid-cols-4 gap-2">
+                      <button
+                        onClick={() => setFilterSize("")}
+                        className={`col-span-4 text-left px-3 py-2 rounded text-sm ${
+                          filterSize === ""
+                            ? "bg-pink-300 text-white"
+                            : "bg-white text-gray-700 border border-gray-200"
+                        }`}
+                      >
+                        Any size
+                      </button>
+
+                      {sizes.map((s) => (
+                        <button
+                          key={String(s)}
+                          onClick={() => setFilterSize(String(s))}
+                          className={`text-center px-2 py-2 rounded text-sm ${
+                            filterSize === String(s)
+                              ? "bg-pink-300 text-white"
+                              : "bg-white text-gray-700 border border-gray-200"
+                          }`}
+                        >
+                          {String(s)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-t border-dashed border-gray-300 my-2" />
+
+                <div className="pt-3 pb-3">
+                  <label className="bw-full flex items-center justify-between text-sm font-medium text-gray-800">
+                    Price ({filterCurrency === "THB" ? "฿" : "Ks"})
+                  </label>
+                  <div className="mt-2 flex items-center space-x-2 text-sm">
+                    <label className="inline-flex items-center">
+                      <input
+                        type="radio"
+                        name="currency"
+                        checked={filterCurrency === "THB"}
+                        onChange={() => setFilterCurrency("THB")}
+                        className="mr-1"
+                      />
+                      ฿
+                    </label>
+                    <label className="inline-flex items-center">
+                      <input
+                        type="radio"
+                        name="currency"
+                        checked={filterCurrency === "MMK"}
+                        onChange={() => setFilterCurrency("MMK")}
+                        className="mr-1"
+                      />
+                      Ks
+                    </label>
+                  </div>
+                  <div className="flex items-center space-x-2 mt-2">
+                    <input
+                      type="number"
+                      value={filterMinPrice}
+                      onChange={(e) => setFilterMinPrice(e.target.value)}
+                      placeholder="Min"
+                      className="w-1/2 border border-gray-200 rounded px-2 py-1 text-sm"
+                    />
+                    <input
+                      type="number"
+                      value={filterMaxPrice}
+                      onChange={(e) => setFilterMaxPrice(e.target.value)}
+                      placeholder="Max"
+                      className="w-1/2 border border-gray-200 rounded px-2 py-1 text-sm"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-auto pt-4">
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => {
+                      setFilterBranch("all");
+                      setFilterCategory("all");
+                      setFilterSize("");
+                      setFilterMinPrice("");
+                      setFilterMaxPrice("");
+                      setFilterCurrency("THB");
+                    }}
+                    className="px-3 py-2 rounded-full border border-gray-300 bg-white text-sm"
+                  >
+                    Reset
+                  </button>
+                  <button
+                    onClick={() => {
+                      // apply current filters (they're live) then close panel and reset pagination
+                      setShowFilter(false);
+                      setCurrentPage(1);
+                    }}
+                    aria-label="Apply filters"
+                    className="ml-auto px-3 py-2 rounded-full bg-pink-400 text-white text-sm"
+                  >
+                    Apply
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-    )}
+        </>
+      )}
 
-    {/* Pagination controls */}
-    <div className="flex items-center justify-center space-x-2 mt-6">
+      {/* Pagination controls */}
+      <div className="flex items-center justify-center space-x-2 mt-6">
         <button
           onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
           disabled={currentPage === 1}

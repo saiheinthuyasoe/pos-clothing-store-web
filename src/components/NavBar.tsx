@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 
 export default function NavBar() {
@@ -18,7 +18,9 @@ export default function NavBar() {
   };
 
   const navLinkClass = (p: string, extra = "") =>
-    `text-gray-800 hover:text-amber-600 ${isActive(p) ? "text-[#111827] font-semibold underline decoration-amber-300" : ""} ${extra}`.trim();
+    `text-gray-800  ${isActive(p) ? "text-[#111827] font-semibold underline decoration-pink-300 underline-offset-4 decoration-2" : ""} ${extra}`.trim();
+
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
 
   // Update URL query without closing UI (used for live typing)
   const updateUrlQuery = (term: string) => {
@@ -100,14 +102,24 @@ export default function NavBar() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  // focus the desktop search input when it opens
+  useEffect(() => {
+    if (searchOpen) {
+      // small timeout to ensure element is visible before focusing
+      const id = setTimeout(() => searchInputRef.current?.focus(), 50);
+      return () => clearTimeout(id);
+    }
+    return;
+  }, [searchOpen]);
   return (
     <nav
-      className={`sticky top-0 z-50 bg-[#FFF7ED] transition-shadow ${
+      className={`sticky top-0 z-50 bg-[#ffffff] transition-shadow ${
         scrolled ? "shadow-md" : "shadow-sm"
       }`}
       aria-label="Main navigation"
     >
-      <div className="mx-auto max-w-6xl flex items-center justify-between p-4">
+      <div className="mx-auto max-w-6xl flex items-center justify-between p-4 relative">
         {/* Left: hamburger / collapse menu */}
         <div className="flex items-center">
           {/* Mobile hamburger (visible on small screens) */}
@@ -117,17 +129,38 @@ export default function NavBar() {
             className="p-2 rounded-md hover:bg-gray-100 md:hidden"
           >
             <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6 text-gray-700"
+              viewBox="0 0 48 48"
+              className="h-8 w-8 text-gray-700 md:h-12 md:w-12"
               fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden
             >
-              <path
+              <line
+                x1="8"
+                y1="14"
+                x2="40"
+                y2="14"
+                stroke="currentColor"
+                strokeWidth={3}
                 strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16M4 18h16"
+              />
+              <line
+                x1="8"
+                y1="24"
+                x2="34"
+                y2="24"
+                stroke="currentColor"
+                strokeWidth={3}
+                strokeLinecap="round"
+              />
+              <line
+                x1="8"
+                y1="34"
+                x2="28"
+                y2="34"
+                stroke="currentColor"
+                strokeWidth={3}
+                strokeLinecap="round"
               />
             </svg>
           </button>
@@ -136,20 +169,41 @@ export default function NavBar() {
           <button
             aria-label="Open menu"
             onClick={() => setMenuOpen((s) => !s)}
-            className="p-2 rounded-md hover:bg-gray-100 hidden md:inline-flex"
+            className="p-1 hidden md:inline-flex"
           >
             <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6 text-gray-700"
+              viewBox="0 0 48 48"
+              className="h-8 w-8 text-gray-700 md:h-10 md:w-18"
               fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden
             >
-              <path
+              <line
+                x1="8"
+                y1="14"
+                x2="40"
+                y2="14"
+                stroke="currentColor"
+                strokeWidth={3}
                 strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16M4 18h16"
+              />
+              <line
+                x1="8"
+                y1="24"
+                x2="34"
+                y2="24"
+                stroke="currentColor"
+                strokeWidth={3}
+                strokeLinecap="round"
+              />
+              <line
+                x1="8"
+                y1="34"
+                x2="28"
+                y2="34"
+                stroke="currentColor"
+                strokeWidth={3}
+                strokeLinecap="round"
               />
             </svg>
           </button>
@@ -165,23 +219,26 @@ export default function NavBar() {
                 className="w-full h-full object-cover"
               />
             </div> */}
-            <span className="text-2xl md:text-3xl font-serif tracking-tight text-[#1f2937]">
+            <span className="text-2xl md:text-3xl font-beatrice tracking-tight text-[#1f2937]">
               Swe Trendy Hub
             </span>
           </Link>
         </div>
 
         {/* Right: search collapse */}
-        <div className="flex items-center space-x-2">
-          <div className="hidden md:flex items-center border rounded-md px-3 py-1 bg-transparent">
+        <div className="flex items-center space-x-2 md:absolute md:right-4 md:top-1/2 md:-translate-y-1/2">
+          <div className="hidden md:flex items-center">
+            {/* keep the search icon visible and animate the input container */}
             <button
-              aria-label="Search"
-              onClick={() => commitSearch()}
-              className="p-0 m-0"
+              aria-label="Toggle search"
+              onClick={() => setSearchOpen((s) => !s)}
+              className={`p-2 rounded-full bg-white border border-gray-300 hover:bg-gray-50 transition-opacity duration-180 ${
+                searchOpen ? "opacity-0 pointer-events-none" : "opacity-100"
+              }`}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4 text-gray-500"
+                className="h-6 w-6 text-gray-500"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -194,25 +251,69 @@ export default function NavBar() {
                 />
               </svg>
             </button>
-            <input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  commitSearch();
-                }
+
+            <div
+              className="ml-2 flex items-center border border-gray-300 rounded-full px-3 py-1 bg-transparent overflow-hidden"
+              style={{
+                width: searchOpen ? 320 : 0,
+                transition:
+                  "width 260ms cubic-bezier(.22,.9,.36,1), opacity 180ms ease",
+                opacity: searchOpen ? 1 : 0,
               }}
-              placeholder="Search products"
-              className="ml-3 outline-none text-sm text-gray-700 placeholder-gray-400"
-            />
+            >
+              <button
+                aria-label="Search"
+                onClick={() => commitSearch()}
+                className="p-0 m-0"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4 text-gray-500"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"
+                  />
+                </svg>
+              </button>
+
+              <input
+                ref={searchInputRef}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    commitSearch();
+                  }
+                  if (e.key === "Escape") {
+                    setSearchOpen(false);
+                  }
+                }}
+                placeholder="Search products"
+                className="ml-3 outline-none text-sm text-gray-700 placeholder-gray-400 w-full"
+              />
+
+              <button
+                aria-label="Close search"
+                onClick={() => setSearchOpen(false)}
+                className="ml-2 p-1 rounded"
+              >
+                ✕
+              </button>
+            </div>
           </div>
 
           {/* mobile search toggle */}
           <button
             aria-label="Toggle search"
             onClick={() => setSearchOpen((s) => !s)}
-            className="p-2 rounded-md hover:bg-gray-100 md:hidden"
+            className="p-2 rounded-full bg-white border border-gray-300 hover:bg-gray-50 md:hidden"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -241,19 +342,19 @@ export default function NavBar() {
         />
 
         <div
-          className={`fixed inset-y-0 left-0 z-50 w-80 bg-[#FFF7ED] shadow-lg transform transition-transform duration-300 ${menuOpen ? "translate-x-0" : "-translate-x-full"}`}
+          className={`fixed inset-y-0 left-0 z-50 w-70 bg-[#ffffff] shadow-lg transform transition-transform duration-300 ${menuOpen ? "translate-x-0" : "-translate-x-full"}`}
         >
-          <div className="px-4 py-5 border-b flex items-center justify-between">
+          <div className="px-4 py-5  flex items-center justify-between">
             <Link href="/" className="flex items-center space-x-3">
               <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center overflow-hidden">
                 <img
-                  src="/logo.png"
+                  src="/logo.jpg"
                   alt="logo"
                   className="w-full h-full object-cover"
                 />
               </div>
               <div>
-                <div className="text-lg font-serif text-[#111827]">
+                <div className="text-lg font-beatrice text-[#111827]">
                   Swe Trendy Hub
                 </div>
                 {/* <div className="text-xs text-gray-600">
@@ -264,7 +365,7 @@ export default function NavBar() {
             <button
               aria-label="Close menu"
               onClick={() => setMenuOpen(false)}
-              className="p-2 rounded-md hover:bg-amber-50 text-gray-700"
+              className="p-2 rounded-md  text-gray-700"
             >
               ✕
             </button>
@@ -275,7 +376,7 @@ export default function NavBar() {
               href="/"
               className={navLinkClass(
                 "/",
-                "block px-3 py-2 rounded-md text-base hover:bg-amber-50",
+                "block px-3 py-2 rounded-md text-base  font-beatrice",
               )}
             >
               Home
@@ -284,7 +385,7 @@ export default function NavBar() {
               href="/new-arrivals"
               className={navLinkClass(
                 "/new-arrivals",
-                "block px-3 py-2 rounded-md text-base hover:bg-amber-50",
+                "block px-3 py-3 rounded-md text-base  font-beatrice",
               )}
             >
               New Arrivals
@@ -293,7 +394,7 @@ export default function NavBar() {
               href="/best-sellers"
               className={navLinkClass(
                 "/best-sellers",
-                "block px-3 py-2 rounded-md text-base hover:bg-amber-50",
+                "block px-3 py-3 rounded-md text-base  font-beatrice",
               )}
             >
               Best Seller
@@ -302,18 +403,12 @@ export default function NavBar() {
               href="/terms-and-conditions"
               className={navLinkClass(
                 "/terms-and-conditions",
-                "block px-3 py-2 rounded-md text-base hover:bg-amber-50",
+                "block px-3 py-3 rounded-md text-base  font-beatrice",
               )}
             >
               Terms & Conditions
             </Link>
           </nav>
-
-          <div className="mt-auto px-4 py-4 border-t border-gray-300 text-sm text-gray-700">
-            <div className="font-semibold mb-1">Contact</div>
-            <div>Shan Yoma — Along Johnnie street, Tachileik</div>
-            <div className="mt-1">09451922223, 09758113774</div>
-          </div>
         </div>
       </>
 
@@ -332,7 +427,7 @@ export default function NavBar() {
                 }
               }}
               placeholder="Search products"
-              className="w-full border rounded-md px-3 py-2 text-sm outline-none"
+              className="w-full border rounded-full border-gray-300 px-3 py-2 text-sm outline-none"
             />
             <button
               aria-label="Close search"

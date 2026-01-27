@@ -51,7 +51,7 @@ export default function TermsPage() {
           </li>
         </ol>
 
-        <p className="pt-5">
+        <p className="pt-5 text-red-600">
           ဤ Terms &amp; Conditions များသည် တဦးတယောက်အတွက် သတ်မှတ်ထားခြင်း
           မဟုတ်ဘဲ လုပ်ငန်း Process အတိုင်း သတ်မှတ်ထားသော စည်းမျဉ်းများဖြစ်ပါသည်။
           ဝယ်ယူမှုအခါ အထက်ပါ အချက်အလက်များကို ဖတ်ရှု့ပြီး သဘောတူညီသည်ဟုယူဆပါသည်။

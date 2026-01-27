@@ -25,6 +25,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link
+          href="https://fonts.cdnfonts.com/css/beatrice-display-trial"
+          rel="stylesheet"
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         style={{ backgroundColor: "#ffffff", color: "#111827" }}
@@ -32,15 +38,15 @@ export default function RootLayout({
         <NavBar />
         <div className="min-h-[60vh]">{children}</div>
 
-        <footer className="w-full bg-[#FFF7ED] mt-8 text-[#1f2937]">
+        <footer className="w-full bg-[#222222] mt-8 text-[#1f2937]">
           <div className="max-w-6xl mx-auto px-4 py-8">
             <div className="flex flex-col md:flex-row md:justify-between gap-8">
               <div className="md:w-1/3">
-                <h4 className="font-semibold text-lg mb-2">Shan Yoma</h4>
-                <p className="text-sm flex items-start gap-2">
+                <h4 className="font-semibold text-white text-lg mb-2">Shan Yoma</h4>
+                <p className="text-md flex items-start gap-2">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 text-amber-600 flex-shrink-0"
+                    className="h-4 w-4 text-pink-400 flex-shrink-0"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -52,16 +58,16 @@ export default function RootLayout({
                       d="M21 10c0 6-9 13-9 13S3 16 3 10a9 9 0 1118 0z"
                     />
                   </svg>
-                  <span>Along Johnnie street, Tachileik.</span>
+                  <span className="text-white">Along Johnnie street, Tachileik.</span>
                 </p>
-                <p className="mt-2 text-sm">
+                <p className="mt-2 text-md">
                   <a
                     href="tel:09451922223"
-                    className="text-amber-600 underline flex items-center gap-2"
+                    className="text-pink-400 flex items-center gap-2"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4 text-amber-600"
+                      className="h-4 w-4 text-pink-400"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
@@ -75,14 +81,14 @@ export default function RootLayout({
                     </svg>
                     09451922223
                   </a>
-                  
+
                   <a
                     href="tel:09758113774"
-                    className="text-amber-600 underline flex items-center gap-2"
+                    className="text-pink-400 flex items-center gap-2"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4 text-amber-600"
+                      className="h-4 w-4 text-pink-400"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
@@ -100,11 +106,11 @@ export default function RootLayout({
               </div>
 
               <div className="md:w-1/3">
-                <h4 className="font-semibold text-lg mb-2">Nitchin Pagoda</h4>
-                <p className="text-sm flex items-start gap-2">
+                <h4 className="font-semibold text-white text-lg mb-2">Nitchin Pagoda</h4>
+                <p className="text-md flex items-start gap-2">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 text-amber-600 flex-shrink-0"
+                    className="h-4 w-4 text-pink-400 flex-shrink-0"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -116,16 +122,16 @@ export default function RootLayout({
                       d="M21 10c0 6-9 13-9 13S3 16 3 10a9 9 0 1118 0z"
                     />
                   </svg>
-                  <span>Wunmaing Rd, San Saing, Tachileik.</span>
+                  <span className="text-white">Wunmaing Rd, spanSaing, Tachileik.</span>
                 </p>
-                <p className="mt-2 text-sm">
+                <p className="mt-2 text-md">
                   <a
                     href="tel:09451922223"
-                    className="text-amber-600 underline flex items-center gap-2"
+                    className="text-pink-400 flex items-center gap-2"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4 text-amber-600"
+                      className="h-4 w-4 text-pink-400"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
@@ -139,14 +145,14 @@ export default function RootLayout({
                     </svg>
                     09451922223
                   </a>
-                  
+
                   <a
                     href="tel:09758113774"
-                    className="text-amber-600 underline flex items-center gap-2"
+                    className="text-pink-400 flex items-center gap-2"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4 text-amber-600"
+                      className="h-4 w-4 text-pink-400"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
@@ -164,11 +170,11 @@ export default function RootLayout({
               </div>
 
               <div className="md:w-1/3">
-                <h4 className="font-semibold text-lg mb-2">Legal</h4>
-                <p className="text-sm mb-2">
+                <h4 className="font-semibold text-white text-lg mb-2">Legal</h4>
+                <p className="text-md mb-2">
                   <a
                     href="/terms-and-conditions"
-                    className="text-amber-600 underline"
+                    className="text-pink-400"
                   >
                     Terms &amp; Conditions
                   </a>
@@ -177,7 +183,7 @@ export default function RootLayout({
                   <a
                     href="#"
                     aria-label="Instagram"
-                    className="text-gray-700 hover:text-amber-600"
+                    className="text-white hover:text-pink-400"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -194,7 +200,7 @@ export default function RootLayout({
                   <a
                     href="#"
                     aria-label="Facebook"
-                    className="text-gray-700 hover:text-amber-600"
+                    className="text-white hover:text-pink-400"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -208,7 +214,7 @@ export default function RootLayout({
                   <a
                     href="#"
                     aria-label="TikTok"
-                    className="text-gray-700 hover:text-amber-600"
+                    className="text-white hover:text-pink-400"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -224,7 +230,7 @@ export default function RootLayout({
             </div>
 
             <div className="mt-6 border-t border-gray-300 pt-4">
-              <div className="text-center text-sm text-gray-600">
+              <div className="text-center text-md text-white">
                 © 2026 Swe Trendy Hub. All rights reserved.
               </div>
             </div>
