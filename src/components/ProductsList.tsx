@@ -453,7 +453,7 @@ export default function ProductsList({
 
   if (loading)
     return (
-      <div className="grid grid-cols-2 gap-2 px-2 py-4 sm:grid-cols-2 md:gap-4 md:px-6 md:py-6 md:grid-cols-2 lg:gap-6 lg:px-6 lg:grid-cols-3 xl:gap-8 xl:px-6 xl:grid-cols-4 bg-white md:max-w-[1000px] md:mx-auto lg:max-w-[1400px] lg:mx-auto xl:max-w-[1800px] xl:mx-auto">
+      <div className="grid grid-cols-2 gap-2 px-2 py-4 sm:grid-cols-2 md:gap-4 md:px-6 md:py-6 md:grid-cols-2 lg:gap-6 lg:px-6 lg:grid-cols-3 xl:gap-8 xl:px-6 xl:grid-cols-4 2xl:grid-cols-5 bg-white md:max-w-[1000px] md:mx-auto lg:max-w-[1400px] lg:mx-auto xl:max-w-[1800px] xl:mx-auto">
         {Array.from({ length: Math.max(4, itemsPerPage) }).map((_, i) => (
           <div key={i} className="animate-pulse bg-white">
             <div className="w-full aspect-[5/8] bg-gray-100 rounded-md" />
@@ -669,7 +669,7 @@ export default function ProductsList({
           </div>
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-2 px-2 py-4 sm:grid-cols-2 md:gap-4 md:px-6 md:py-6 md:grid-cols-2 lg:gap-6 lg:px-6 lg:grid-cols-3 xl:gap-8 xl:px-6 xl:grid-cols-4 bg-white md:max-w-[1000px] md:mx-auto lg:max-w-[1400px] lg:mx-auto xl:max-w-[1800px] xl:mx-auto">
+      <div className="grid grid-cols-2 gap-2 px-2 py-4 sm:grid-cols-2 md:gap-4 md:px-6 md:py-6 md:grid-cols-2 lg:gap-6 lg:px-6 lg:grid-cols-3 xl:gap-8 xl:px-6 xl:grid-cols-4 2xl:grid-cols-5 bg-white md:max-w-[1000px] md:mx-auto lg:max-w-[1400px] lg:mx-auto xl:max-w-[1800px] xl:mx-auto">
         {visibleProducts.map((p) => {
           const hasVariants =
             Array.isArray(p.colorVariants) && p.colorVariants.length > 0;

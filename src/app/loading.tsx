@@ -10,7 +10,7 @@ export default function Loading() {
 
         <div className="mt-4 text-center text-sm text-gray-700">Loading…</div>
 
-        <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-5">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="animate-pulse">
               <div className="h-44 bg-gray-100 rounded-md" />
