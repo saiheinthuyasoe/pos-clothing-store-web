@@ -226,7 +226,7 @@ export default function NavBar() {
         </div>
 
         {/* Right: search collapse */}
-        <div className="flex items-center space-x-2 md:absolute md:right-4 md:top-1/2 md:-translate-y-1/2">
+        <div className="flex items-center md:absolute  md:right-2 md:top-1/2 md:-translate-y-1/2">
           <div className="hidden md:flex items-center">
             {/* keep the search icon visible and animate the input container */}
             <button

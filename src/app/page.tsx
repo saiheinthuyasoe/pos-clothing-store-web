@@ -66,7 +66,7 @@ function Carousel() {
             "/fallback.png"
           }
           alt={items[current]?.name || "Product"}
-          className="object-cover transition-all duration-500"
+          className="object-contain object-center transition-all duration-500"
           fill
           sizes="100vw"
         />
