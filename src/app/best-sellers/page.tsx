@@ -132,8 +132,12 @@ export default function BestSellersPage() {
             groupImage: data.groupImage as string | undefined,
             stock: (data.stock as number) || 0,
             createdAt:
-              (data.createdAt as Timestamp | number | Date | null | undefined) ||
-              null,
+              (data.createdAt as
+                | Timestamp
+                | number
+                | Date
+                | null
+                | undefined) || null,
             salesCount: counts[d.id] || 0,
           };
         });
@@ -203,7 +207,23 @@ export default function BestSellersPage() {
   const start = (currentPage - 1) * itemsPerPage;
   const visible = sortedItems.slice(start, start + itemsPerPage);
 
-  if (loading) return <div className="p-6">Loading best sellers…</div>;
+  if (loading)
+    return (
+      <div className="max-w-6xl mx-auto py-8 px-4">
+        <h1 className="text-2xl font-serif text-center text-gray-800 border-b pb-4 mb-6">
+          Best Seller
+        </h1>
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          {Array.from({ length: 10 }).map((_, i) => (
+            <div key={i} className="animate-pulse">
+              <div className="aspect-[5/8] bg-gray-100 rounded-md mb-2" />
+              <div className="h-4 bg-gray-100 rounded w-3/4 mb-2" />
+              <div className="h-3 bg-gray-100 rounded w-1/2" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   if (error) return <div className="p-6 text-red-600">Error: {error}</div>;
   if (!items || items.length === 0)
     return <div className="p-6">No best sellers in the last 30 days.</div>;
@@ -229,7 +249,7 @@ export default function BestSellersPage() {
                   | "price_desc"
                   | "name_asc"
                   | "name_desc"
-                  | "newest"
+                  | "newest",
               )
             }
             className="border border-gray-200 rounded px-2 py-1 text-sm bg-white"
@@ -244,7 +264,7 @@ export default function BestSellersPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         {visible.map((p) => (
           <Link key={p.id} href={`/product/${p.id}`} className="block">
             <div className="group bg-white hover:shadow-lg transition p-2">
