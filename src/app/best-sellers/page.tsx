@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   collection,
@@ -205,15 +206,68 @@ export default function BestSellersPage() {
 
   const totalPages = Math.max(1, Math.ceil(sortedItems.length / itemsPerPage));
   const start = (currentPage - 1) * itemsPerPage;
-  const visible = sortedItems.slice(start, start + itemsPerPage);
+  // --- search support: sync with URL and app:search events ---
+  const searchParams = useSearchParams();
+  const urlQuery = (searchParams?.get("q") || "").trim();
+  const [localQuery, setLocalQuery] = useState<string>(urlQuery);
+
+  useEffect(() => {
+    setLocalQuery(urlQuery);
+  }, [urlQuery]);
+
+  useEffect(() => {
+    const handler = (e: CustomEvent) => {
+      const q = (e?.detail || "").toString();
+      setLocalQuery((q || "").toString());
+      setCurrentPage(1);
+    };
+    if (typeof window !== "undefined") {
+      window.addEventListener("app:search", handler as EventListener);
+    }
+    return () => {
+      if (typeof window !== "undefined") {
+        window.removeEventListener("app:search", handler as EventListener);
+      }
+    };
+  }, []);
+
+  const filteredItems = (
+    localQuery
+      ? sortedItems.filter((p) => {
+          const q = localQuery.toLowerCase();
+          const name = (p.name || "").toLowerCase();
+          return name.includes(q);
+        })
+      : sortedItems
+  ) as ProductItem[];
+
+  const totalPagesFiltered = Math.max(
+    1,
+    Math.ceil(filteredItems.length / itemsPerPage),
+  );
+  const startFiltered = (currentPage - 1) * itemsPerPage;
+  const visible = filteredItems.slice(
+    startFiltered,
+    startFiltered + itemsPerPage,
+  );
 
   if (loading)
     return (
       <div className="max-w-6xl mx-auto py-8 px-4">
-        <h1 className="text-2xl font-serif text-center text-gray-800 border-b pb-4 mb-6">
+        <h1 className="text-2xl font-serif text-center text-pink-400 mb-6 font-beatrice">
           Best Seller
         </h1>
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+
+        <div className="border border-pink-300 m-9 mr-30 ml-30"></div>
+
+        <div className="mx-auto max-w-xl text-center">
+          <div className="flex items-center justify-center">
+            <div className="h-12 w-12 border-4 border-gray-200 border-t-pink-500 rounded-full animate-spin" />
+          </div>
+          <div className="mt-4 h-6 bg-gray-100 rounded w-48 mx-auto animate-pulse" />
+        </div>
+
+        <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {Array.from({ length: 10 }).map((_, i) => (
             <div key={i} className="animate-pulse">
               <div className="aspect-[5/8] bg-gray-100 rounded-md mb-2" />
@@ -228,16 +282,30 @@ export default function BestSellersPage() {
   if (!items || items.length === 0)
     return <div className="p-6">No best sellers in the last 30 days.</div>;
 
+  if (localQuery && (!filteredItems || filteredItems.length === 0)) {
+    return (
+      <div className="max-w-4xl mx-auto p-8 text-center">
+        <div className="text-lg md:text-xl font-medium text-gray-700">
+          No items found for &quot;{localQuery}&quot;
+        </div>
+        <div className="mt-3 text-sm text-gray-500">
+          Try a different search term or clear filters.
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-6xl mx-auto py-8 px-4">
-      <h1 className="text-2xl font-serif text-center text-gray-800 border-b pb-4 mb-6">
+      <h1 className="text-2xl font-serif text-center text-pink-400 mb-6 font-beatrice">
         Best Seller
       </h1>
 
+      <div className="border border-pink-300 m-9 mr-30 ml-30"></div>
+
       <div className="flex items-center justify-between mb-4">
-        <div className="text-sm text-gray-600">Sort by</div>
+        <div className="text-sm text-gray-600">{items.length} best sellers</div>
         <div>
-          <label className="sr-only">Sort by</label>
           <select
             title="sortBy"
             value={sortBy}
@@ -254,12 +322,12 @@ export default function BestSellersPage() {
             }
             className="border border-gray-200 rounded px-2 py-1 text-sm bg-white"
           >
-            <option value="sales">Best Selling</option>
+            <option value="sales">Sort by: Best Selling</option>
             <option value="price_asc">Price: Low to High</option>
             <option value="price_desc">Price: High to Low</option>
             <option value="name_asc">Name: A–Z</option>
             <option value="name_desc">Name: Z–A</option>
-            <option value="newest">Newest</option>
+            <option value="newest">Sort by: Newest</option>
           </select>
         </div>
       </div>
@@ -290,29 +358,43 @@ export default function BestSellersPage() {
         ))}
       </div>
 
-      <div className="flex items-center justify-between mt-6">
-        <div className="text-sm text-gray-600">
-          {items.length} best sellers (last 30 days)
+      <div className="flex items-center justify-center space-x-2 mt-6">
+        <button
+          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+          disabled={currentPage === 1}
+          className="px-3 py-1 rounded border border-gray-300 bg-white text-sm disabled:opacity-50"
+        >
+          Prev
+        </button>
+
+        <div className="flex items-center space-x-1">
+          {Array.from({ length: totalPagesFiltered }).map((_, i) => {
+            const page = i + 1;
+            return (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                className={`px-3 py-1 rounded text-sm border ${
+                  currentPage === page
+                    ? "bg-gray-600 text-white border-gray-600"
+                    : "bg-white text-gray-700 border-gray-200"
+                }`}
+              >
+                {page}
+              </button>
+            );
+          })}
         </div>
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={() => setCurrentPage((s) => Math.max(1, s - 1))}
-            disabled={currentPage === 1}
-            className="px-3 py-1 border rounded disabled:opacity-50"
-          >
-            Prev
-          </button>
-          <div className="text-sm">
-            {currentPage} / {totalPages}
-          </div>
-          <button
-            onClick={() => setCurrentPage((s) => Math.min(totalPages, s + 1))}
-            disabled={currentPage === totalPages}
-            className="px-3 py-1 border rounded disabled:opacity-50"
-          >
-            Next
-          </button>
-        </div>
+
+        <button
+          onClick={() =>
+            setCurrentPage((p) => Math.min(totalPagesFiltered, p + 1))
+          }
+          disabled={currentPage === totalPagesFiltered}
+          className="px-3 py-1 rounded border border-gray-300 bg-white text-sm disabled:opacity-50"
+        >
+          Next
+        </button>
       </div>
     </div>
   );

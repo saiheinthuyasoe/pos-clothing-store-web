@@ -2,10 +2,12 @@ import React from "react";
 
 export default function TermsPage() {
   return (
-    <div className="max-w-4xl mx-auto py-12 px-4">
-      <h1 className="text-2xl font-serif text-center text-gray-800 mb-6">
-        Terms and Condition
+    <div className="max-w-6xl mx-auto py-8 px-4">
+      <h1 className="text-2xl font-serif text-center text-pink-400 mb-6 font-beatrice">
+        TERMS AND CONDITIONS
       </h1>
+
+      <div className="border border-pink-300 m-9 mr-30 ml-30"></div>
 
       <div className="prose max-w-none">
         <ol className="list-decimal list-inside ml-4 space-y-2">

@@ -124,7 +124,7 @@ function Carousel() {
         </svg>
       </button>
       <div className="absolute bottom-8 left-0 right-0 text-center">
-        <span className="bg-white bg-opacity-80 px-3 py-1 rounded text-lg font-semibold">
+        <span className="bg-white bg-opacity-80 px-3 py-1 rounded-full text-lg font-semibold">
           {items[current]?.name}
         </span>
       </div>

@@ -453,21 +453,61 @@ export default function ProductsList({
 
   if (loading)
     return (
-      <div className="grid grid-cols-2 gap-2 px-2 py-4 sm:grid-cols-2 md:gap-4 md:px-6 md:py-6 md:grid-cols-2 lg:gap-6 lg:px-6 lg:grid-cols-3 xl:gap-8 xl:px-6 xl:grid-cols-4 2xl:grid-cols-5 bg-white md:max-w-[1000px] md:mx-auto lg:max-w-[1400px] lg:mx-auto xl:max-w-[1800px] xl:mx-auto">
-        {Array.from({ length: Math.max(4, itemsPerPage) }).map((_, i) => (
-          <div key={i} className="animate-pulse bg-white">
-            <div className="w-full aspect-[5/8] bg-gray-100 rounded-md" />
-            <div className="px-2 py-3">
-              <div className="h-4 bg-gray-100 rounded w-3/4 mb-2" />
-              <div className="h-3 bg-gray-100 rounded w-1/2" />
+      <div className="bg-white">
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          <div className="mx-auto max-w-xl text-center">
+            <div className="flex items-center justify-center">
+              <div className="h-12 w-12 border-4 border-gray-200 border-t-pink-500 rounded-full animate-spin" />
             </div>
+            <div className="mt-4 h-6 bg-gray-100 rounded w-48 mx-auto animate-pulse" />
+            <div className="mt-3 h-3 bg-gray-100 rounded w-64 mx-auto animate-pulse" />
           </div>
-        ))}
+
+          <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            {Array.from({
+              length: Math.min(12, Math.max(6, itemsPerPage)),
+            }).map((_, i) => (
+              <div key={i} className="animate-pulse bg-white">
+                <div className="w-full aspect-[5/8] bg-gray-100 rounded-md" />
+                <div className="px-2 py-3">
+                  <div className="h-4 bg-gray-100 rounded w-3/4 mb-2" />
+                  <div className="h-3 bg-gray-100 rounded w-1/2" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   if (error) return <div className="p-8 text-red-600">Error: {error}</div>;
   if (!products || products.length === 0)
     return <div className="p-8">No products found.</div>;
+
+  const effectiveQuery = (localQuery || urlQuery || "").trim();
+  if (effectiveQuery && filteredProducts.length === 0) {
+    return (
+      <div className="max-w-4xl mx-auto p-8 text-center">
+        <div className="text-lg md:text-xl font-medium text-gray-700">
+          No items found for &quot;{effectiveQuery}&quot;
+        </div>
+        <div className="mt-3 text-sm text-gray-500">
+          Try a different search term or clear filters.
+        </div>
+      </div>
+    );
+  }
+  if (!effectiveQuery && filteredProducts.length === 0) {
+    return (
+      <div className="max-w-4xl mx-auto p-8 text-center">
+        <div className="text-lg md:text-xl font-medium text-gray-700">
+          No items match the current filters.
+        </div>
+        <div className="mt-3 text-sm text-gray-500">
+          Try clearing filters or adjusting your criteria.
+        </div>
+      </div>
+    );
+  }
 
   const handleColorSelect = (productId: string, colorId: string) => {
     setSelectedColors((prev) => {

@@ -17,6 +17,16 @@ export default function NavBar() {
     return pathname === p;
   };
 
+  const supportsInlineSearch = (p?: string | null) => {
+    if (!p) return false;
+    return (
+      p === "/" ||
+      p.startsWith("/new-arrivals") ||
+      p.startsWith("/best-sellers") ||
+      p.startsWith("/product/")
+    );
+  };
+
   const navLinkClass = (p: string, extra = "") =>
     `text-gray-800  ${isActive(p) ? "text-[#111827] font-semibold underline decoration-pink-300 underline-offset-4 decoration-2" : ""} ${extra}`.trim();
 
@@ -25,11 +35,7 @@ export default function NavBar() {
   // Update URL query without closing UI (used for live typing)
   const updateUrlQuery = (term: string) => {
     try {
-      if (
-        pathname === "/" ||
-        pathname === "/new-arrivals" ||
-        pathname?.startsWith("/product/")
-      ) {
+      if (supportsInlineSearch(pathname)) {
         const base = pathname || "/";
         const newUrl = term ? `${base}?q=${encodeURIComponent(term)}` : base;
         // replace history state without triggering navigation
@@ -57,11 +63,7 @@ export default function NavBar() {
   const commitSearch = (q?: string) => {
     const term = (q ?? searchQuery).trim();
     try {
-      if (
-        pathname === "/" ||
-        pathname === "/new-arrivals" ||
-        pathname?.startsWith("/product/")
-      ) {
+      if (supportsInlineSearch(pathname)) {
         const base = pathname || "/";
         const newUrl = term ? `${base}?q=${encodeURIComponent(term)}` : base;
         try {
@@ -219,7 +221,7 @@ export default function NavBar() {
                 className="w-full h-full object-cover"
               />
             </div> */}
-            <span className="text-2xl md:text-3xl font-beatrice tracking-tight text-[#1f2937]">
+            <span className="text-2xl md:text-3xl font-beatrice tracking-tight text-pink-400 mr-0 md:mr-19">
               Swe Trendy Hub
             </span>
           </Link>

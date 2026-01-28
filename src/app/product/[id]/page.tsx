@@ -219,7 +219,27 @@ export default function ProductDetailPage() {
     // Do not auto-select a color on load. User must explicitly pick a color.
   }, [product?.id]);
 
-  if (loading) return <div className="p-6">Loading…</div>;
+  if (loading)
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <div className="max-w-5xl w-full grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="animate-pulse">
+            <div className="w-full bg-gray-100 rounded-md h-[420px] md:h-[550px]" />
+            <div className="mt-4 h-6 bg-gray-100 rounded w-3/4" />
+            <div className="mt-2 h-4 bg-gray-100 rounded w-1/2" />
+          </div>
+          <div className="animate-pulse">
+            <div className="h-6 bg-gray-100 rounded w-1/3 mb-4" />
+            <div className="space-y-3">
+              <div className="h-4 bg-gray-100 rounded w-full" />
+              <div className="h-4 bg-gray-100 rounded w-5/6" />
+              <div className="h-3 bg-gray-100 rounded w-2/3" />
+              <div className="h-3 bg-gray-100 rounded w-1/2" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   if (error) return <div className="p-6 text-red-600">Error: {error}</div>;
   if (!product) return <div className="p-6">No product</div>;
 
@@ -231,7 +251,22 @@ export default function ProductDetailPage() {
             onClick={() => router.back()}
             className="text-sm underline text-gray-700"
           >
-            ← Back
+            <svg
+              width="61"
+              height="14"
+              viewBox="0 0 61 14"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="text-gray-600"
+            >
+              <path
+                d="M60.25 6.75H0.75M0.75 6.75L6.75 0.75M0.75 6.75L6.75 12.75"
+                stroke="currentColor"
+                strokeWidth={1.5}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>{" "}
           </button>
         </div>
 
@@ -268,7 +303,7 @@ export default function ProductDetailPage() {
                   className={`flex flex-col items-center w-20 shrink-0`}
                 >
                   <div
-                    className={`w-16 h-16 rounded overflow-hidden border ${!selectedVariantId ? "border-[#7c4a32] shadow-sm" : "border-gray-200"}`}
+                    className={`w-16 h-16 rounded overflow-hidden border ${!selectedVariantId ? "border-pink-300 shadow-sm" : "border-gray-200"}`}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
@@ -299,7 +334,7 @@ export default function ProductDetailPage() {
                       className={`flex flex-col items-center w-20 shrink-0 inline-flex`}
                     >
                       <div
-                        className={`w-16 h-16 rounded overflow-hidden border ${isActive ? "border-[#7c4a32] shadow-sm" : "border-gray-200"}`}
+                        className={`w-16 h-16 rounded overflow-hidden border ${isActive ? "border-pink-300 shadow-sm" : "border-gray-200"}`}
                       >
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
@@ -323,19 +358,19 @@ export default function ProductDetailPage() {
 
           <aside className="p-2 md:p-6 rounded md:col-span-1 md:pl-10">
             <div className="space-y-3">
-              <div className="text-lg font-semibold text-gray-900">
+              <div className="text-2xl md:text-3xl font-bold text-gray-900">
                 {displayName}
               </div>
 
-              <div className="text-base text-gray-900">
+              <div className="mt-1 text-2xl md:text-3xl text-gray-900">
                 {displayPrice !== null ? (
                   <>
-                    <span className="font-medium">
+                    <span className="font-semibold text-2xl md:text-3xl">
                       {Number.isInteger(displayPrice)
                         ? `฿ ${displayPrice.toFixed(0)}`
                         : `฿ ${displayPrice.toFixed(2)}`}
                     </span>
-                    <span className="text-gray-500">{` / ${Math.round(
+                    <span className="text-gray-500 ml-3">{` / ${Math.round(
                       displayPrice *
                         (Number(process?.env?.NEXT_PUBLIC_MMK_RATE) || 55),
                     ).toLocaleString()} Ks`}</span>
@@ -345,17 +380,17 @@ export default function ProductDetailPage() {
                 )}
               </div>
 
-              <div className="text-sm text-gray-600">
-                <span className="text-xs text-gray-500">Category: </span>
-                <span className="font-medium text-gray-900">
+              <div className="text-base text-gray-600 mt-2">
+                <span className="text-sm text-gray-500">Category: </span>
+                <span className="font-medium text-base text-gray-900 ml-2">
                   {product.category || product.description || "—"}
                 </span>
               </div>
 
               <div>
-                <div className="text-sm text-gray-700 mb-1">
-                  <span>Color :</span>
-                  <span className="font-medium text-gray-900 ml-2">
+                <div className="text-base text-gray-700 mb-1">
+                  <span className="font-medium">Color :</span>
+                  <span className="font-semibold text-gray-900 ml-2">
                     {selectedVariant?.color || ""}
                   </span>
                 </div>
@@ -368,7 +403,7 @@ export default function ProductDetailPage() {
                   }}
                 >
                   {variants.length === 0 && (
-                    <div className="text-xs text-gray-500">No colors</div>
+                    <div className="text-sm text-gray-500">No colors</div>
                   )}
                   {variants.map((v, idx) => {
                     const vid = v.id ?? v.color ?? String(idx);
@@ -382,7 +417,7 @@ export default function ProductDetailPage() {
                           setSelectedSize("");
                         }}
                         title={v.color}
-                        className={`w-7 h-7 rounded-full border-2 transition-all inline-flex items-center justify-center shrink-0 ${
+                        className={`w-8 h-8 rounded-full border-2 transition-all inline-flex items-center justify-center shrink-0 ${
                           isSelected
                             ? "ring-2 ring-offset-1 ring-blue-300 border-transparent"
                             : "border-gray-300"
@@ -401,7 +436,7 @@ export default function ProductDetailPage() {
                         setSelectedVariantId(null);
                         setSelectedSize("");
                       }}
-                      className="px-3 py-1 text-sm bg-red-50 text-red-600 rounded inline-flex"
+                      className="px-4 py-2 text-base bg-red-50 text-red-600 rounded inline-flex"
                     >
                       Clear
                     </button>
@@ -415,15 +450,15 @@ export default function ProductDetailPage() {
                   </div>
                 )}
 
-                <div className="text-sm text-gray-700 mb-2">
-                  <span>Size :</span>
-                  <span className="font-medium text-gray-900 ml-2">
+                <div className="text-base text-gray-700 mb-2">
+                  <span className="font-medium">Size :</span>
+                  <span className="font-semibold text-gray-900 ml-2">
                     {selectedSize || ""}
                   </span>
                 </div>
 
                 <div
-                  className="flex gap-2 overflow-x-auto pb-2 whitespace-nowrap w-full max-w-full"
+                  className="flex gap-2 overflow-x-auto pb-2 whitespace-nowrap w-full max-w-full md:grid md:grid-cols-4 md:gap-3 md:overflow-visible md:whitespace-normal"
                   style={{
                     WebkitOverflowScrolling: "touch",
                     overflowY: "hidden",
@@ -447,18 +482,15 @@ export default function ProductDetailPage() {
                           qty > 0 && setSelectedSize(String(sq.size))
                         }
                         disabled={qty === 0}
-                        className={`px-3 py-2 border rounded text-sm transition-colors inline-flex ${
+                        className={`px-4 py-3 border rounded text-base transition-colors inline-flex items-center justify-center ${
                           isSelected
-                            ? "bg-[#7c4a32] text-white border-[#7c4a32]"
+                            ? "bg-pink-300  text-white border-pink-300"
                             : qty === 0
                               ? "bg-white text-gray-400 border-gray-200 line-through opacity-60"
                               : "bg-white text-gray-700 border-gray-200 hover:border-gray-300"
                         }`}
                       >
-                        <div className="flex items-center space-x-2">
-                          <span className="font-medium">{String(sq.size)}</span>
-                          <span className="text-xs text-gray-500">({qty})</span>
-                        </div>
+                        <span className="font-semibold">{String(sq.size)}</span>
                       </button>
                     );
                   })}
@@ -468,17 +500,17 @@ export default function ProductDetailPage() {
                 {selectedVariantId && selectedSize && (
                   <div className="mt-4 border-t pt-4 space-y-2">
                     <div className="flex items-center justify-between">
-                      <div className="text-xs text-gray-500">
+                      <div className="text-sm text-gray-500">
                         Selected Item:
                       </div>
-                      <div className="text-sm font-medium text-right">
+                      <div className="text-base font-medium text-right">
                         {selectedItemLabel}
                       </div>
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <div className="text-xs text-gray-500">Price:</div>
-                      <div className="text-sm font-medium text-right">
+                      <div className="text-sm text-gray-500">Price:</div>
+                      <div className="text-base font-medium text-right">
                         {mmkPrice !== null
                           ? `${mmkPrice.toLocaleString()} Ks`
                           : "—"}
@@ -486,10 +518,10 @@ export default function ProductDetailPage() {
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <div className="text-xs text-gray-500">
+                      <div className="text-sm text-gray-500">
                         Available Quantity
                       </div>
-                      <div className="text-sm font-medium text-right">
+                      <div className="text-base font-medium text-right">
                         {selectedQty}
                       </div>
                     </div>
@@ -502,9 +534,11 @@ export default function ProductDetailPage() {
       </div>
       {/* Suggested / New items list */}
       <div className="mt-10">
-        <h2 className="text-2xl font-serif text-center text-gray-800 border-t pt-6 mb-6">
+        <h2 className="text-2xl font-beatrice text-center text-pink-400 border-t border-dashed pt-6 mb-6">
           Suggest Items
         </h2>
+        <div className="border border-pink-300 m-9 mr-25 ml-25 md:mr-80 md:ml-80"></div>
+
         <div className="max-w-[1100px] mx-auto pb-12">
           <ProductsList showOnlyNew itemsPerPageDefault={20} hideFilters />
         </div>

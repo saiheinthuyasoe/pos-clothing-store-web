@@ -32,18 +32,20 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
         style={{ backgroundColor: "#ffffff", color: "#111827" }}
       >
         <NavBar />
-        <div className="min-h-[60vh]">{children}</div>
+        <main className="flex-1">{children}</main>
 
-        <footer className="w-full bg-[#222222] mt-8 text-[#1f2937]">
-          <div className="max-w-6xl mx-auto px-4 py-8">
-            <div className="flex flex-col md:flex-row md:justify-between gap-8">
-              <div className="md:w-1/3">
-                <h4 className="font-semibold text-white text-lg mb-2">Shan Yoma</h4>
-                <p className="text-md flex items-start gap-2">
+        <footer className="w-full bg-[#111827] mt-8 text-white">
+          <div className="max-w-6xl mx-auto px-4 py-10">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div>
+                <h4 className="font-semibold text-white text-lg mb-2">
+                  Shan Yoma
+                </h4>
+                <p className="text-md flex items-start gap-2 text-gray-200">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-4 w-4 text-pink-400 flex-shrink-0"
@@ -58,12 +60,14 @@ export default function RootLayout({
                       d="M21 10c0 6-9 13-9 13S3 16 3 10a9 9 0 1118 0z"
                     />
                   </svg>
-                  <span className="text-white">Along Johnnie street, Tachileik.</span>
+                  <span className="text-gray-200">
+                    Along Johnnie street, Tachileik.
+                  </span>
                 </p>
-                <p className="mt-2 text-md">
+                <p className="mt-3 text-md space-y-2 text-gray-200">
                   <a
                     href="tel:09451922223"
-                    className="text-pink-400 flex items-center gap-2"
+                    className="text-pink-400 flex items-center gap-2 block"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -84,7 +88,7 @@ export default function RootLayout({
 
                   <a
                     href="tel:09758113774"
-                    className="text-pink-400 flex items-center gap-2"
+                    className="text-pink-400 flex items-center gap-2 block"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -105,9 +109,11 @@ export default function RootLayout({
                 </p>
               </div>
 
-              <div className="md:w-1/3">
-                <h4 className="font-semibold text-white text-lg mb-2">Nitchin Pagoda</h4>
-                <p className="text-md flex items-start gap-2">
+              <div>
+                <h4 className="font-semibold text-white text-lg mb-2">
+                  Nitchin Pagoda
+                </h4>
+                <p className="text-md flex items-start gap-2 text-gray-200">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-4 w-4 text-pink-400 flex-shrink-0"
@@ -122,12 +128,14 @@ export default function RootLayout({
                       d="M21 10c0 6-9 13-9 13S3 16 3 10a9 9 0 1118 0z"
                     />
                   </svg>
-                  <span className="text-white">Wunmaing Rd, spanSaing, Tachileik.</span>
+                  <span className="text-gray-200">
+                    Wunmaing Rd, spanSaing, Tachileik.
+                  </span>
                 </p>
-                <p className="mt-2 text-md">
+                <p className="mt-3 text-md space-y-2 text-gray-200">
                   <a
                     href="tel:09451922223"
-                    className="text-pink-400 flex items-center gap-2"
+                    className="text-pink-400 flex items-center gap-2 block"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -148,7 +156,7 @@ export default function RootLayout({
 
                   <a
                     href="tel:09758113774"
-                    className="text-pink-400 flex items-center gap-2"
+                    className="text-pink-400 flex items-center gap-2 block"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -169,13 +177,10 @@ export default function RootLayout({
                 </p>
               </div>
 
-              <div className="md:w-1/3">
+              <div>
                 <h4 className="font-semibold text-white text-lg mb-2">Legal</h4>
                 <p className="text-md mb-2">
-                  <a
-                    href="/terms-and-conditions"
-                    className="text-pink-400"
-                  >
+                  <a href="/terms-and-conditions" className="text-pink-400">
                     Terms &amp; Conditions
                   </a>
                 </p>
@@ -229,8 +234,8 @@ export default function RootLayout({
               </div>
             </div>
 
-            <div className="mt-6 border-t border-gray-300 pt-4">
-              <div className="text-center text-md text-white">
+            <div className="mt-8 border-t border-gray-700 pt-6">
+              <div className="text-center text-md text-gray-400">
                 © 2026 Swe Trendy Hub. All rights reserved.
               </div>
             </div>
