@@ -534,7 +534,7 @@ export default function ProductDetailPage() {
       </div>
       {/* Suggested / New items list */}
       <div className="mt-10">
-        <h2 className="text-2xl font-beatrice text-center text-pink-400 border-t border-dashed pt-6 mb-6">
+        <h2 className="text-2xl font-pacifico text-center text-pink-400 border-t border-dashed pt-6 mb-6">
           Suggest Items
         </h2>
         <div className="border border-pink-300 m-9 mr-25 ml-25 md:mr-80 md:ml-80"></div>

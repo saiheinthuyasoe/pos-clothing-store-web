@@ -26,6 +26,8 @@ body {
 }
 
 /* Headline / display font for titles */
-.font-beatrice {
-  font-family: "Beatrice Headline Trial", "Beatrice Display Trial", serif;
+.font-pacifico {
+  font-family: "Pacifico", cursive;
+  font-weight: 400;
+  font-style: normal;
 }

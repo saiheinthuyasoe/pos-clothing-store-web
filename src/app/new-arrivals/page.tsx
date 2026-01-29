@@ -11,7 +11,7 @@ export default function Page() {
     <div className="min-h-screen bg-white font-sans text-black">
       <main className="mx-auto max-w-6xl py-8">
         <section className=" px-6">
-          <h1 className="text-2xl font-serif text-center text-pink-400 mb-6 font-beatrice">
+          <h1 className="text-2xl font-serif text-center text-pink-400 mb-6 font-pacifico">
             {t("new_arrivals")}
           </h1>
 

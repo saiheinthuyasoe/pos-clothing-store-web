@@ -8,7 +8,7 @@ export default function TermsPage() {
 
   return (
     <div className="max-w-6xl mx-auto py-8 px-4">
-      <h1 className="text-2xl font-serif text-center text-pink-400 mb-6 font-beatrice">
+      <h1 className="text-2xl font-serif text-center text-pink-400 mb-6 font-pacifico">
         {t("terms")}
       </h1>
 

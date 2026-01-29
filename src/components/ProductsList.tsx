@@ -919,7 +919,7 @@ export default function ProductsList({
           >
             <div className="p-4 h-full flex flex-col">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-3xl font-medium font-beatrice">
+                <h3 className="text-3xl font-medium font-pacifico">
                   {t("filters")}
                 </h3>
                 <button

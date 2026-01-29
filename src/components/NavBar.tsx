@@ -253,7 +253,7 @@ export default function NavBar() {
                 className="w-full h-full object-cover"
               />
             </div> */}
-            <span className="text-2xl md:text-3xl font-beatrice tracking-tight text-pink-400 mr-0 md:mr-19">
+            <span className="text-2xl md:text-3xl font-pacifico tracking-tight text-gray-900 mr-0 md:mr-19">
               {t("brand")}
             </span>
           </Link>
@@ -388,7 +388,7 @@ export default function NavBar() {
                 />
               </div>
               <div>
-                <div className="text-lg font-beatrice text-[#111827]">
+                <div className="text-lg font-pacifico text-[#111827]">
                   {t("brand")}
                 </div>
                 {/* <div className="text-xs text-gray-600">
@@ -410,7 +410,7 @@ export default function NavBar() {
               href="/"
               className={navLinkClass(
                 "/",
-                "block px-3 py-2 rounded-md text-base  font-beatrice",
+                "block px-3 py-2 rounded-md text-base  font-pacifico",
               )}
             >
               {t("home")}
@@ -419,7 +419,7 @@ export default function NavBar() {
               href="/new-arrivals"
               className={navLinkClass(
                 "/new-arrivals",
-                "block px-3 py-3 rounded-md text-base  font-beatrice",
+                "block px-3 py-3 rounded-md text-base  font-pacifico",
               )}
             >
               {t("new_arrivals")}
@@ -428,7 +428,7 @@ export default function NavBar() {
               href="/best-sellers"
               className={navLinkClass(
                 "/best-sellers",
-                "block px-3 py-3 rounded-md text-base  font-beatrice",
+                "block px-3 py-3 rounded-md text-base  font-pacifico",
               )}
             >
               {t("best_sellers")}
@@ -437,7 +437,7 @@ export default function NavBar() {
               href="/terms-and-conditions"
               className={navLinkClass(
                 "/terms-and-conditions",
-                "block px-3 py-3 rounded-md text-base  font-beatrice",
+                "block px-3 py-3 rounded-md text-base  font-pacifico",
               )}
             >
               {t("terms")}
