@@ -442,21 +442,21 @@ export default function NavBar() {
             >
               {t("terms")}
             </Link>
-            <div className="pt-3 border-t mt-2">
+            <div className="pt-3 border-t border-pink-400 mt-2">
               <div className="text-sm text-gray-600 mb-2">{t("language")}</div>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setLanguage("EN")}
                   className={`px-3 py-1 rounded-full text-sm font-medium ${lang === "EN" ? "bg-pink-400 text-white" : "bg-white text-gray-700 border border-gray-200"}`}
                 >
-                  {t("english_en")}
+                  {t("EN")}
                 </button>
 
                 <button
                   onClick={() => setLanguage("MM")}
                   className={`px-3 py-1 rounded-full text-sm font-medium ${lang === "MM" ? "bg-pink-400 text-white" : "bg-white text-gray-700 border border-gray-200"}`}
                 >
-                  {t("myanmar_mm")}
+                  {t("MM")}
                 </button>
               </div>
             </div>
