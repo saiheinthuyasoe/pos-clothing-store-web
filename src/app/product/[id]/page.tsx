@@ -395,7 +395,7 @@ export default function ProductDetailPage() {
                   </span>
                 </div>
                 <div
-                  className="flex items-center gap-3 mb-3 mt-3 p-2 overflow-x-auto pb-2 whitespace-nowrap w-full max-w-full"
+                  className="flex flex-wrap items-center gap-3 mb-3 mt-3 p-2 w-full max-w-full md:max-h-none md:flex-nowrap md:overflow-x-auto md:whitespace-nowrap"
                   style={{
                     WebkitOverflowScrolling: "touch",
                     overflowY: "hidden",
