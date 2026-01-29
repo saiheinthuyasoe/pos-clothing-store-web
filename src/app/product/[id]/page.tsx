@@ -534,12 +534,15 @@ export default function ProductDetailPage() {
       </div>
       {/* Suggested / New items list */}
       <div className="mt-10">
-        <h2 className="text-2xl font-pacifico text-center text-pink-400 border-t border-dashed pt-6 mb-6">
-          Suggest Items
-        </h2>
-        <div className="border border-pink-300 m-9 mr-25 ml-25 md:mr-80 md:ml-80"></div>
+        <div className="flex items-center max-w-[1100px] mx-auto px-4 md:px-0">
+          <div className="flex-1 h-px bg-pink-300" />
+          <h2 className="px-6 text-2xl font-pacifico text-center text-pink-400">
+            Suggest Items
+          </h2>
+          <div className="flex-1 h-px bg-pink-300" />
+        </div>
 
-        <div className="max-w-[1100px] mx-auto pb-12">
+        <div className="max-w-[1100px] mx-auto pb-12 pt-6">
           <ProductsList showOnlyNew itemsPerPageDefault={20} hideFilters />
         </div>
       </div>

@@ -39,8 +39,8 @@ export default function NavBar() {
   const updateUrlQuery = (term: string) => {
     try {
       if (supportsInlineSearch(pathname)) {
-        const base = pathname || "/";
-        const newUrl = term ? `${base}?q=${encodeURIComponent(term)}` : base;
+        const lg = pathname || "/";
+        const newUrl = term ? `${lg}?q=${encodeURIComponent(term)}` : lg;
         // replace history state without triggering navigation
         if (typeof window !== "undefined") {
           window.history.replaceState(null, "", newUrl);
@@ -67,8 +67,8 @@ export default function NavBar() {
     const term = (q ?? searchQuery).trim();
     try {
       if (supportsInlineSearch(pathname)) {
-        const base = pathname || "/";
-        const newUrl = term ? `${base}?q=${encodeURIComponent(term)}` : base;
+        const lg = pathname || "/";
+        const newUrl = term ? `${lg}?q=${encodeURIComponent(term)}` : lg;
         try {
           router.replace(newUrl);
         } finally {
@@ -380,7 +380,7 @@ export default function NavBar() {
         >
           <div className="px-4 py-5  flex items-center justify-between">
             <Link href="/" className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center overflow-hidden">
+              <div className="w-10 h-10 rounded-full border border-gray-400 bg-amber-100 flex items-center justify-center overflow-hidden">
                 <img
                   src="/logo.jpg"
                   alt="logo"
@@ -410,7 +410,7 @@ export default function NavBar() {
               href="/"
               className={navLinkClass(
                 "/",
-                "block px-3 py-2 rounded-md text-base  font-pacifico",
+                "block px-3 py-2 rounded-md text-lg  font-pacifico",
               )}
             >
               {t("home")}
@@ -419,7 +419,7 @@ export default function NavBar() {
               href="/new-arrivals"
               className={navLinkClass(
                 "/new-arrivals",
-                "block px-3 py-3 rounded-md text-base  font-pacifico",
+                "block px-3 py-3 rounded-md text-lg  font-pacifico",
               )}
             >
               {t("new_arrivals")}
@@ -428,7 +428,7 @@ export default function NavBar() {
               href="/best-sellers"
               className={navLinkClass(
                 "/best-sellers",
-                "block px-3 py-3 rounded-md text-base  font-pacifico",
+                "block px-3 py-3 rounded-md text-lg  font-pacifico",
               )}
             >
               {t("best_sellers")}
@@ -437,13 +437,13 @@ export default function NavBar() {
               href="/terms-and-conditions"
               className={navLinkClass(
                 "/terms-and-conditions",
-                "block px-3 py-3 rounded-md text-base  font-pacifico",
+                "block px-3 py-3 rounded-md text-lg  font-pacifico",
               )}
             >
               {t("terms")}
             </Link>
-            <div className="pt-3 border-t border-pink-400 mt-2">
-              <div className="text-sm text-gray-600 mb-2">{t("language")}</div>
+            <div className="pt-3 border-t border-pink-400 mt-10">
+              <div className="text-md text-gray-600 mb-4">{t("language")}</div>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setLanguage("EN")}
