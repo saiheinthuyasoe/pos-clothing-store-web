@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useMemo } from "react";
+import { useLanguage } from "../../contexts/LanguageContext";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -251,11 +252,13 @@ export default function BestSellersPage() {
     startFiltered + itemsPerPage,
   );
 
+  const { t } = useLanguage();
+
   if (loading)
     return (
       <div className="max-w-6xl mx-auto py-8 px-4">
         <h1 className="text-2xl font-serif text-center text-pink-400 mb-6 font-beatrice">
-          Best Seller
+          {t("best_sellers")}
         </h1>
 
         <div className="border border-pink-300 m-9 mr-30 ml-30"></div>
@@ -304,7 +307,9 @@ export default function BestSellersPage() {
       <div className="border border-pink-300 m-9 mr-30 ml-30"></div>
 
       <div className="flex items-center justify-between mb-4">
-        <div className="text-sm text-gray-600">{items.length} best sellers</div>
+        <div className="text-sm text-gray-600">
+          {items.length} {t("best_sellers")}
+        </div>
         <div>
           <select
             title="sortBy"
@@ -322,12 +327,12 @@ export default function BestSellersPage() {
             }
             className="border border-gray-200 rounded px-2 py-1 text-sm bg-white"
           >
-            <option value="sales">Sort by: Best Selling</option>
-            <option value="price_asc">Price: Low to High</option>
-            <option value="price_desc">Price: High to Low</option>
-            <option value="name_asc">Name: A–Z</option>
-            <option value="name_desc">Name: Z–A</option>
-            <option value="newest">Sort by: Newest</option>
+            <option value="sales">{t("sort_sales")}</option>
+            <option value="price_asc">{t("sort_price_asc")}</option>
+            <option value="price_desc">{t("sort_price_desc")}</option>
+            <option value="name_asc">{t("sort_name_asc")}</option>
+            <option value="name_desc">{t("sort_name_desc")}</option>
+            <option value="newest">{t("sort_newest")}</option>
           </select>
         </div>
       </div>
@@ -351,7 +356,7 @@ export default function BestSellersPage() {
                 {p.price ? `฿ ${p.price}` : "—"}
               </div>
               <div className="text-xs text-gray-500 mt-1">
-                Sold: {p.salesCount}
+                {t("sold")}: {p.salesCount}
               </div>
             </div>
           </Link>
@@ -364,7 +369,7 @@ export default function BestSellersPage() {
           disabled={currentPage === 1}
           className="px-3 py-1 rounded border border-gray-300 bg-white text-sm disabled:opacity-50"
         >
-          Prev
+          {t("prev")}
         </button>
 
         <div className="flex items-center space-x-1">
@@ -393,7 +398,7 @@ export default function BestSellersPage() {
           disabled={currentPage === totalPagesFiltered}
           className="px-3 py-1 rounded border border-gray-300 bg-white text-sm disabled:opacity-50"
         >
-          Next
+          {t("next")}
         </button>
       </div>
     </div>

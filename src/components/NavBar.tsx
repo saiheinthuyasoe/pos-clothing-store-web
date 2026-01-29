@@ -3,14 +3,17 @@
 import Link from "next/link";
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { useLanguage } from "../contexts/LanguageContext";
 
 export default function NavBar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [lang, setLang] = useState("EN");
   const router = useRouter();
   const pathname = usePathname();
+  const { t } = useLanguage();
 
   const isActive = (p: string) => {
     if (!pathname) return false;
@@ -104,6 +107,35 @@ export default function NavBar() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("lang");
+      if (saved) setLang(saved);
+      if (typeof document !== "undefined") {
+        document.documentElement.lang = saved === "MM" ? "my" : "en";
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, []);
+
+  const setLanguage = (code: string) => {
+    setLang(code);
+    try {
+      localStorage.setItem("lang", code);
+      if (typeof document !== "undefined") {
+        document.documentElement.lang = code === "MM" ? "my" : "en";
+      }
+      try {
+        window.dispatchEvent(new CustomEvent("app:language", { detail: code }));
+      } catch (e) {
+        // ignore
+      }
+    } catch (e) {
+      // ignore
+    }
+  };
 
   // focus the desktop search input when it opens
   useEffect(() => {
@@ -222,7 +254,7 @@ export default function NavBar() {
               />
             </div> */}
             <span className="text-2xl md:text-3xl font-beatrice tracking-tight text-pink-400 mr-0 md:mr-19">
-              Swe Trendy Hub
+              {t("brand")}
             </span>
           </Link>
         </div>
@@ -297,7 +329,7 @@ export default function NavBar() {
                     setSearchOpen(false);
                   }
                 }}
-                placeholder="Search products"
+                placeholder={t("search_placeholder")}
                 className="ml-3 outline-none text-sm text-gray-700 placeholder-gray-400 w-full"
               />
 
@@ -357,7 +389,7 @@ export default function NavBar() {
               </div>
               <div>
                 <div className="text-lg font-beatrice text-[#111827]">
-                  Swe Trendy Hub
+                  {t("brand")}
                 </div>
                 {/* <div className="text-xs text-gray-600">
                   Clothing & Accessories
@@ -381,7 +413,7 @@ export default function NavBar() {
                 "block px-3 py-2 rounded-md text-base  font-beatrice",
               )}
             >
-              Home
+              {t("home")}
             </Link>
             <Link
               href="/new-arrivals"
@@ -390,7 +422,7 @@ export default function NavBar() {
                 "block px-3 py-3 rounded-md text-base  font-beatrice",
               )}
             >
-              New Arrivals
+              {t("new_arrivals")}
             </Link>
             <Link
               href="/best-sellers"
@@ -399,7 +431,7 @@ export default function NavBar() {
                 "block px-3 py-3 rounded-md text-base  font-beatrice",
               )}
             >
-              Best Seller
+              {t("best_sellers")}
             </Link>
             <Link
               href="/terms-and-conditions"
@@ -408,8 +440,26 @@ export default function NavBar() {
                 "block px-3 py-3 rounded-md text-base  font-beatrice",
               )}
             >
-              Terms & Conditions
+              {t("terms")}
             </Link>
+            <div className="pt-3 border-t mt-2">
+              <div className="text-sm text-gray-600 mb-2">{t("language")}</div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setLanguage("EN")}
+                  className={`px-3 py-1 rounded-full text-sm font-medium ${lang === "EN" ? "bg-pink-400 text-white" : "bg-white text-gray-700 border border-gray-200"}`}
+                >
+                  {t("english_en")}
+                </button>
+
+                <button
+                  onClick={() => setLanguage("MM")}
+                  className={`px-3 py-1 rounded-full text-sm font-medium ${lang === "MM" ? "bg-pink-400 text-white" : "bg-white text-gray-700 border border-gray-200"}`}
+                >
+                  {t("myanmar_mm")}
+                </button>
+              </div>
+            </div>
           </nav>
         </div>
       </>
@@ -428,7 +478,7 @@ export default function NavBar() {
                   commitSearch();
                 }
               }}
-              placeholder="Search products"
+              placeholder={t("search_placeholder")}
               className="w-full border rounded-full border-gray-300 px-3 py-2 text-sm outline-none"
             />
             <button

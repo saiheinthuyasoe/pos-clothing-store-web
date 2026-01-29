@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useLanguage } from "../contexts/LanguageContext";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
@@ -116,6 +117,7 @@ export default function ProductsList({
     "newest" | "price-asc" | "price-desc" | "name-asc" | "name-desc"
   >("newest");
   const [shops, setShops] = useState<Array<{ id: string; name: string }>>([]);
+  const { t } = useLanguage();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -488,10 +490,10 @@ export default function ProductsList({
     return (
       <div className="max-w-4xl mx-auto p-8 text-center">
         <div className="text-lg md:text-xl font-medium text-gray-700">
-          No items found for &quot;{effectiveQuery}&quot;
+          {t("no_items_found_for").replace("{q}", effectiveQuery)}
         </div>
         <div className="mt-3 text-sm text-gray-500">
-          Try a different search term or clear filters.
+          {t("try_different_search")}
         </div>
       </div>
     );
@@ -500,10 +502,10 @@ export default function ProductsList({
     return (
       <div className="max-w-4xl mx-auto p-8 text-center">
         <div className="text-lg md:text-xl font-medium text-gray-700">
-          No items match the current filters.
+          {t("no_items_match_filters")}
         </div>
         <div className="mt-3 text-sm text-gray-500">
-          Try clearing filters or adjusting your criteria.
+          {t("try_clearing_filters")}
         </div>
       </div>
     );
@@ -548,7 +550,7 @@ export default function ProductsList({
       <div className="flex flex-col md:flex-row md:items-center justify-between px-2 py-2 md:px-6 md:py-4">
         <div className="flex flex-col md:flex-row md:items-center">
           <div className="text-sm text-gray-600">
-            {filteredProducts ? `${filteredProducts.length} items` : ""}
+            {filteredProducts ? `${filteredProducts.length} ${t("items")}` : ""}
           </div>
 
           <div className="flex flex-wrap items-center gap-2 mt-2 ml-3 md:mt-0">
@@ -631,7 +633,7 @@ export default function ProductsList({
                 }}
                 className="text-md text-red-600 underline md:ml-2 ml-0"
               >
-                Clear all
+                {t("clear_all")}
               </button>
             )}
           </div>
@@ -645,7 +647,7 @@ export default function ProductsList({
                 aria-controls="filters-panel"
                 className="px-3 py-1 rounded border border-gray-300 bg-white text-sm hover:bg-gray-50 inline-flex items-center space-x-2"
               >
-                <span>Filters</span>
+                <span>{t("filters")}</span>
                 <svg
                   className={`h-4 w-4 transform transition-transform duration-200 ${showFilter ? "rotate-180" : "rotate-0"}`}
                   viewBox="0 0 20 20"
@@ -684,11 +686,11 @@ export default function ProductsList({
                 }
                 className="peer border border-gray-200 rounded px-2 py-1 text-sm bg-white appearance-none pr-8"
               >
-                <option value="newest">Sort by: Newest</option>
-                <option value="price-asc">Price: Low → High</option>
-                <option value="price-desc">Price: High → Low</option>
-                <option value="name-asc">Name: A → Z</option>
-                <option value="name-desc">Name: Z → A</option>
+                <option value="newest">{t("sort_newest")}</option>
+                <option value="price-asc">{t("sort_price_asc")}</option>
+                <option value="price-desc">{t("sort_price_desc")}</option>
+                <option value="name-asc">{t("sort_name_asc")}</option>
+                <option value="name-desc">{t("sort_name_desc")}</option>
               </select>
               <svg
                 className="h-4 w-4 absolute right-2 transform transition-transform duration-200 peer-focus:rotate-180 pointer-events-none text-gray-600"
@@ -760,13 +762,13 @@ export default function ProductsList({
                 <div className="relative bg-white overflow-hidden p-0">
                   {p.isNew && !isOutOfStock && (
                     <span className="absolute top-2 left-2 bg-green-500 text-white text-[10px] px-1 py-0.5 rounded z-10">
-                      New
+                      {t("new_label")}
                     </span>
                   )}
                   {isOutOfStock && (
                     <div className="absolute inset-0 bg-black/40 z-20 flex items-center justify-center">
                       <span className="text-sm font-bold text-white">
-                        OUT OF STOCK
+                        {t("out_of_stock")}
                       </span>
                     </div>
                   )}
@@ -917,7 +919,9 @@ export default function ProductsList({
           >
             <div className="p-4 h-full flex flex-col">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-3xl font-medium font-beatrice">Filters</h3>
+                <h3 className="text-3xl font-medium font-beatrice">
+                  {t("filters")}
+                </h3>
                 <button
                   onClick={() => setShowFilter(false)}
                   aria-label="Close filters"
@@ -947,7 +951,7 @@ export default function ProductsList({
                     aria-expanded={expandedBranch}
                     className="w-full flex items-center justify-between text-sm font-medium text-gray-800"
                   >
-                    <span>Branch</span>
+                    <span>{t("branch")}</span>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 24 24"
@@ -970,7 +974,7 @@ export default function ProductsList({
                       onClick={() => setFilterBranch("all")}
                       className={`w-full text-left px-3 py-2 rounded text-sm ${filterBranch === "all" ? "bg-pink-300 text-white" : "bg-white text-gray-700 border border-gray-200"}`}
                     >
-                      All branches
+                      {t("all_branches")}
                     </button>
 
                     {branches.map((sh: { id: string; name: string }) => (
@@ -994,7 +998,7 @@ export default function ProductsList({
                     aria-expanded={expandedCategory}
                     className="w-full flex items-center justify-between text-sm font-medium text-gray-800"
                   >
-                    <span>Category</span>
+                    <span>{t("category")}</span>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 24 24"
@@ -1017,7 +1021,7 @@ export default function ProductsList({
                       onClick={() => setFilterCategory("all")}
                       className={`w-full text-left px-3 py-2 rounded text-sm ${filterCategory === "all" ? "bg-pink-300 text-white" : "bg-white text-gray-700 border border-gray-200"}`}
                     >
-                      All categories
+                      {t("all_categories")}
                     </button>
                     {categories.map((c) => (
                       <button
@@ -1042,7 +1046,7 @@ export default function ProductsList({
                     aria-expanded={expandedSize}
                     className="w-full flex items-center justify-between text-sm font-medium text-gray-800"
                   >
-                    <span>Size</span>
+                    <span>{t("size")}</span>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 24 24"
@@ -1068,7 +1072,7 @@ export default function ProductsList({
                             : "bg-white text-gray-700 border border-gray-200"
                         }`}
                       >
-                        Any size
+                        {t("any_size")}
                       </button>
 
                       {sizes.map((s) => (
@@ -1092,7 +1096,7 @@ export default function ProductsList({
 
                 <div className="pt-3 pb-3">
                   <label className="bw-full flex items-center justify-between text-sm font-medium text-gray-800">
-                    Price ({filterCurrency === "THB" ? "฿" : "Ks"})
+                    {t("price")} ({filterCurrency === "THB" ? "฿" : "Ks"})
                   </label>
                   <div className="mt-2 flex items-center space-x-2 text-sm">
                     <label className="inline-flex items-center">
@@ -1121,14 +1125,14 @@ export default function ProductsList({
                       type="number"
                       value={filterMinPrice}
                       onChange={(e) => setFilterMinPrice(e.target.value)}
-                      placeholder="Min"
+                      placeholder={t("min")}
                       className="w-1/2 border border-gray-200 rounded px-2 py-1 text-sm"
                     />
                     <input
                       type="number"
                       value={filterMaxPrice}
                       onChange={(e) => setFilterMaxPrice(e.target.value)}
-                      placeholder="Max"
+                      placeholder={t("max")}
                       className="w-1/2 border border-gray-200 rounded px-2 py-1 text-sm"
                     />
                   </div>
@@ -1148,7 +1152,7 @@ export default function ProductsList({
                     }}
                     className="px-3 py-2 rounded-full border border-gray-300 bg-white text-sm"
                   >
-                    Reset
+                    {t("reset")}
                   </button>
                   <button
                     onClick={() => {
@@ -1159,7 +1163,7 @@ export default function ProductsList({
                     aria-label="Apply filters"
                     className="ml-auto px-3 py-2 rounded-full bg-pink-400 text-white text-sm"
                   >
-                    Apply
+                    {t("apply")}
                   </button>
                 </div>
               </div>
@@ -1175,7 +1179,7 @@ export default function ProductsList({
           disabled={currentPage === 1}
           className="px-3 py-1 rounded border border-gray-300 bg-white text-sm disabled:opacity-50"
         >
-          Prev
+          {t("prev")}
         </button>
 
         <div className="flex items-center space-x-1">
@@ -1202,7 +1206,7 @@ export default function ProductsList({
           disabled={currentPage === totalPages}
           className="px-3 py-1 rounded border border-gray-300 bg-white text-sm disabled:opacity-50"
         >
-          Next
+          {t("next")}
         </button>
       </div>
     </>

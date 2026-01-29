@@ -1,10 +1,15 @@
+"use client";
+
 import React from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function TermsPage() {
+  const { t } = useLanguage();
+
   return (
     <div className="max-w-6xl mx-auto py-8 px-4">
       <h1 className="text-2xl font-serif text-center text-pink-400 mb-6 font-beatrice">
-        TERMS AND CONDITIONS
+        {t("terms")}
       </h1>
 
       <div className="border border-pink-300 m-9 mr-30 ml-30"></div>
@@ -49,7 +54,7 @@ export default function TermsPage() {
           </li>
           <li>
             အလားတူ Refund ပေးရန် အကြုံးဝင်သောပစ္စည်းများအား Swe Trendy Hub ဘက်မှ
-            ပစ္စည်းလက်ခံရရှိပြီးမှသာ Refund ပေးမည်ဖြစ်ပါတယ်။
+            ပစ္စည်းလက်ခံရရှိပြီးမှသာ Refund ပေးမည်ဖြစ်ပါသည်။
           </li>
         </ol>
 
