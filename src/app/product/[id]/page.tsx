@@ -222,9 +222,9 @@ export default function ProductDetailPage() {
   if (loading)
     return (
       <div className="min-h-screen flex items-center justify-center p-6">
-        <div className="max-w-5xl w-full grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="max-w-5xl w-full grid grid-cols-1 xl:grid-cols-2 gap-8">
           <div className="animate-pulse">
-            <div className="w-full bg-gray-100 rounded-md h-[420px] md:h-[550px]" />
+            <div className="w-full bg-gray-100 rounded-md h-[420px] xl:h-[550px]" />
             <div className="mt-4 h-6 bg-gray-100 rounded w-3/4" />
             <div className="mt-2 h-4 bg-gray-100 rounded w-1/2" />
           </div>
@@ -245,7 +245,7 @@ export default function ProductDetailPage() {
 
   return (
     <>
-      <div className="p-4 md:p-8 max-w-[1100px] mx-auto">
+      <div className="p-4 xl:p-8 max-w-[1100px] mx-auto">
         <div className="mb-4">
           <button
             onClick={() => router.back()}
@@ -270,14 +270,14 @@ export default function ProductDetailPage() {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:[grid-template-columns:450px_1fr] gap-10 md:gap-20 items-start">
+        <div className="grid grid-cols-1 xl:[grid-template-columns:450px_1fr] gap-10 xl:gap-20 items-start">
           <div>
-            <div className="w-full bg-white overflow-visible flex items-center justify-center md:w-[450px] md:min-h-[550px] h-auto flex-col">
+            <div className="w-full bg-white overflow-visible flex items-center justify-center xl:w-[450px] xl:min-h-[550px] h-auto flex-col">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={mainImageSrc}
                 alt={displayName || "Product"}
-                className="w-full h-auto md:w-[450px] md:max-h-[550px] object-contain"
+                className="w-full h-auto xl:w-[450px] xl:max-h-[550px] object-contain"
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
@@ -356,13 +356,13 @@ export default function ProductDetailPage() {
             </div>
           </div>
 
-          <aside className="p-2 md:p-6 rounded md:col-span-1 md:pl-10">
+          <aside className="p-2 xl:p-6 rounded xl:col-span-1 xl:pl-10">
             <div className="space-y-3">
-              <div className="text-2xl md:text-3xl font-bold text-gray-900">
+              <div className="text-2xl xl:text-3xl font-bold text-gray-900">
                 {displayName}
               </div>
 
-              <div className="mt-1 text-2xl md:text-3xl text-gray-900">
+              <div className="mt-1 text-2xl xl:text-3xl text-gray-900">
                 {displayPrice !== null ? (
                   <>
                     <span className="font-semibold text-2xl md:text-3xl">
@@ -395,7 +395,7 @@ export default function ProductDetailPage() {
                   </span>
                 </div>
                 <div
-                  className="flex flex-wrap items-center gap-3 mb-3 mt-3 p-2 w-full max-w-full md:max-h-none md:flex-nowrap md:overflow-x-auto md:whitespace-nowrap"
+                  className="flex flex-wrap items-center gap-3 mb-3 mt-3 p-2 w-full max-w-full xl:max-h-none xl:flex-nowrap xl:overflow-x-auto xl:whitespace-nowrap"
                   style={{
                     WebkitOverflowScrolling: "touch",
                     overflowY: "hidden",
@@ -458,7 +458,7 @@ export default function ProductDetailPage() {
                 </div>
 
                 <div
-                  className="flex gap-2 overflow-x-auto pb-2 whitespace-nowrap w-full max-w-full md:grid md:grid-cols-4 md:gap-3 md:overflow-visible md:whitespace-normal"
+                  className="flex gap-2 overflow-x-auto pb-2 whitespace-nowrap w-full max-w-full xl:grid xl:grid-cols-4 xl:gap-3 xl:overflow-visible xl:whitespace-normal"
                   style={{
                     WebkitOverflowScrolling: "touch",
                     overflowY: "hidden",
@@ -511,9 +511,22 @@ export default function ProductDetailPage() {
                     <div className="flex items-center justify-between">
                       <div className="text-sm text-gray-500">Price:</div>
                       <div className="text-base font-medium text-right">
-                        {mmkPrice !== null
-                          ? `${mmkPrice.toLocaleString()} Ks`
-                          : "—"}
+                        {displayPrice !== null ? (
+                          <>
+                            <span className="font-semibold">
+                              {Number.isInteger(displayPrice)
+                                ? `฿ ${displayPrice.toFixed(0)}`
+                                : `฿ ${displayPrice.toFixed(2)}`}
+                            </span>
+                            {mmkPrice !== null ? (
+                              <span className="text-gray-500 text-sm ml-2">
+                                / {mmkPrice.toLocaleString()} Ks
+                              </span>
+                            ) : null}
+                          </>
+                        ) : (
+                          "—"
+                        )}
                       </div>
                     </div>
 
@@ -534,7 +547,7 @@ export default function ProductDetailPage() {
       </div>
       {/* Suggested / New items list */}
       <div className="mt-10">
-        <div className="flex items-center max-w-[1100px] mx-auto px-4 md:px-0">
+        <div className="flex items-center max-w-[1100px] mx-auto px-4 xl:px-0">
           <div className="flex-1 h-px bg-pink-300" />
           <h2 className="px-6 text-2xl font-pacifico text-center text-pink-400">
             Suggest Items
