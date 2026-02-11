@@ -6,6 +6,7 @@ import { LanguageProvider } from "../contexts/LanguageContext";
 import Footer from "../components/Footer";
 import InstallPrompt from "../components/InstallPrompt";
 import ServiceWorkerRegistration from "../components/ServiceWorkerRegistration";
+import QueryProvider from "../providers/QueryProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -61,13 +62,15 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
         style={{ backgroundColor: "#ffffff", color: "#111827" }}
       >
-        <LanguageProvider>
-          <ServiceWorkerRegistration />
-          <NavBar />
-          <main className="flex-1">{children}</main>
-          <Footer />
-          <InstallPrompt />
-        </LanguageProvider>
+        <QueryProvider>
+          <LanguageProvider>
+            <ServiceWorkerRegistration />
+            <NavBar />
+            <main className="flex-1">{children}</main>
+            <Footer />
+            <InstallPrompt />
+          </LanguageProvider>
+        </QueryProvider>
       </body>
     </html>
   );

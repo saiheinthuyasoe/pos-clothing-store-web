@@ -38,13 +38,20 @@ export async function GET() {
 
     if (!db) {
       // Firestore not configured locally — return development fallback items
-      return NextResponse.json({ items: fallback });
+      return NextResponse.json(
+        { items: fallback },
+        {
+          headers: {
+            "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+          },
+        },
+      );
     }
     // Query recent stock groups (owner app stores items in 'stocks')
     const q = query(
       collection(db, "stocks"),
       orderBy("createdAt", "desc"),
-      limit(4)
+      limit(4),
     );
     const snapshot = await getDocs(q);
 
@@ -89,15 +96,29 @@ export async function GET() {
 
     // If no items found and we're running in development, return fallback samples
     if (!items.length && process.env.NODE_ENV !== "production") {
-      return NextResponse.json({ items: fallback });
+      return NextResponse.json(
+        { items: fallback },
+        {
+          headers: {
+            "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+          },
+        },
+      );
     }
 
-    return NextResponse.json({ items });
+    return NextResponse.json(
+      { items },
+      {
+        headers: {
+          "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+        },
+      },
+    );
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
       { items: [], error: msg || "Failed to fetch new items" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

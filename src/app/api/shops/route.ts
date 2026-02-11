@@ -8,15 +8,22 @@ export async function GET() {
       process.env.NEXT_PUBLIC_SHOPS_API_URL ||
       "http://localhost:3000/api/shops";
 
-    const upstream = await fetch(upstreamUrl);
+    const upstream = await fetch(upstreamUrl, {
+      next: { revalidate: 300 }, // Cache for 5 minutes
+    });
     const data = await upstream.json().catch(() => null);
     const status = upstream.status || 200;
-    return NextResponse.json(data, { status });
+    return NextResponse.json(data, {
+      status,
+      headers: {
+        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+      },
+    });
   } catch (error) {
     console.error("Error proxying /api/shops:", error);
     return NextResponse.json(
       { success: false, error: "Failed to fetch shops" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

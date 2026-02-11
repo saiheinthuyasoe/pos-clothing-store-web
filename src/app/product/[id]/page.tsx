@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "../../../lib/firebase";
 import Link from "next/link";
 import ProductsList from "../../../components/ProductsList";
+import { useProduct } from "../../../hooks/useProducts";
+import { useCurrencyRate } from "../../../hooks/useSettings";
 
 type SizeQuantity = { size?: string; quantity?: number | string };
 type ColorVariant = {
@@ -15,29 +15,25 @@ type ColorVariant = {
   image?: string;
   sizeQuantities?: SizeQuantity[];
 };
-type Product = {
-  id?: string;
-  colorVariants?: ColorVariant[];
-  stock?: number;
-  groupName?: string;
-  name?: string;
-  unitPrice?: number | string;
-  price?: number | string;
-  groupImage?: string;
-  image?: string;
-  category?: string;
-  description?: string;
-  modelInfo?: string | number;
-  [key: string]: unknown;
-};
 
 export default function ProductDetailPage() {
   const params = useParams() as { id?: string };
-  const id = params?.id;
+  const id = params?.id || "";
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [product, setProduct] = useState<Product | null>(null);
+
+  // Use TanStack Query hook for cached data fetching
+  const {
+    data: product,
+    isLoading: loading,
+    error: queryError,
+  } = useProduct(id);
+  const { rate: mmkRate } = useCurrencyRate();
+
+  const error = queryError
+    ? queryError instanceof Error
+      ? queryError.message
+      : String(queryError)
+    : null;
 
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(
     null,
@@ -56,12 +52,11 @@ export default function ProductDetailPage() {
   );
   const stock = product?.stock ?? stockFromVariants ?? 0;
 
-  const displayName = (product && (product.groupName || product.name)) || "";
+  const displayName = product?.name || "";
   const displayPrice: number | null = (() => {
     if (!product) return null;
-    if (typeof product.unitPrice === "number") return product.unitPrice;
     if (typeof product.price === "number") return product.price;
-    const parsed = Number(product.unitPrice ?? product.price);
+    const parsed = Number(product.price);
     return Number.isFinite(parsed) ? parsed : null;
   })();
 
@@ -103,7 +98,6 @@ export default function ProductDetailPage() {
       displayName || "Product",
     )}`;
 
-  const mmkRate = Number(process?.env?.NEXT_PUBLIC_MMK_RATE) || 55;
   const mmkPrice =
     displayPrice !== null ? Math.round(displayPrice * mmkRate) : null;
 
@@ -187,41 +181,10 @@ export default function ProductDetailPage() {
     touchEndX.current = null;
   };
 
-  useEffect(() => {
-    if (!id) return;
-    const fetchProduct = async () => {
-      try {
-        if (!db) {
-          setError("Firebase not configured");
-          setLoading(false);
-          return;
-        }
-        const ref = doc(db, "stocks", id);
-        const snap = await getDoc(ref);
-        if (!snap.exists()) {
-          setError("Product not found");
-          setLoading(false);
-          return;
-        }
-        const data = snap.data();
-        setProduct({ id: snap.id, ...data });
-      } catch (e: unknown) {
-        const message = e instanceof Error ? e.message : String(e);
-        setError(message);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProduct();
-  }, [id]);
-
-  useEffect(() => {
-    // Do not auto-select a color on load. User must explicitly pick a color.
-  }, [product?.id]);
-
   if (loading)
     return (
       <div className="min-h-screen flex items-center justify-center p-6">
+        \
         <div className="max-w-5xl w-full grid grid-cols-1 xl:grid-cols-2 gap-8">
           <div className="animate-pulse">
             <div className="w-full bg-gray-100 rounded-md h-[420px] xl:h-[550px]" />

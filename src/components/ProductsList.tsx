@@ -4,8 +4,9 @@ import React, { useEffect, useState } from "react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
-import { db, isFirebaseConfigured } from "../lib/firebase";
+import { useProducts, type Product } from "../hooks/useProducts";
+import { useCurrencyRate } from "../hooks/useSettings";
+import { useShops } from "../hooks/useShops";
 
 type SizeQuantity = {
   size?: string;
@@ -18,42 +19,6 @@ type ColorVariant = {
   colorCode?: string;
   image?: string;
   sizeQuantities?: SizeQuantity[];
-};
-
-type FirestoreTimestampLike =
-  | { toMillis?: () => number }
-  | number
-  | string
-  | null;
-
-type FirestoreStockDoc = {
-  groupName?: string;
-  name?: string;
-  unitPrice?: number;
-  price?: number;
-  category?: string;
-  description?: string;
-  image?: string;
-  groupImage?: string;
-  colorVariants?: ColorVariant[];
-  stock?: number;
-  createdAt?: FirestoreTimestampLike;
-  [key: string]: unknown;
-};
-
-type Product = {
-  id: string;
-  name?: string;
-  price?: number;
-  description?: string;
-  category?: string;
-  image?: string;
-  groupImage?: string;
-  colorVariants?: ColorVariant[];
-  stock?: number;
-  createdAt?: FirestoreTimestampLike;
-  isNew?: boolean;
-  shop?: string;
 };
 
 export default function ProductsList({
@@ -89,17 +54,31 @@ export default function ProductsList({
       }
     };
   }, []);
-  const [products, setProducts] = useState<Product[] | null>(null);
-  const [loading, setLoading] = useState(true);
+
+  // Use TanStack Query hooks for cached data fetching
+  const {
+    data: products,
+    isLoading: loading,
+    error: queryError,
+  } = useProducts();
+  const { rate: mmkRate } = useCurrencyRate();
+  const { data: shopsData = [] } = useShops();
+
   const [error, setError] = useState<string | null>(null);
+
+  // Set error from query if it exists
+  useEffect(() => {
+    if (queryError) {
+      setError(
+        queryError instanceof Error ? queryError.message : String(queryError),
+      );
+    }
+  }, [queryError]);
   const [selectedColors, setSelectedColors] = useState<Record<string, string>>(
     {},
   );
   const [selectedSizes, setSelectedSizes] = useState<Record<string, string>>(
     {},
-  );
-  const [mmkRate, setMmkRate] = useState<number>(
-    Number(process?.env?.NEXT_PUBLIC_MMK_RATE) || 55,
   );
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage] = useState<number>(itemsPerPageDefault);
@@ -116,156 +95,15 @@ export default function ProductsList({
   const [sortBy, setSortBy] = useState<
     "newest" | "price-asc" | "price-desc" | "name-asc" | "name-desc"
   >("newest");
-  const [shops, setShops] = useState<Array<{ id: string; name: string }>>([]);
   const { t } = useLanguage();
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        // The main app stores items under the `stocks` collection.
-        // Ensure newest items are returned first by ordering on `createdAt` desc.
-        if (!db) {
-          setError("Firebase not configured");
-          return;
-        }
-        const q = query(collection(db, "stocks"), orderBy("createdAt", "desc"));
-        const snap = await getDocs(q);
-        const NEW_DAYS = Number(process?.env?.NEXT_PUBLIC_NEW_ITEM_DAYS) || 7;
-        const MS_PER_DAY = 24 * 60 * 60 * 1000;
-
-        const items: Product[] = snap.docs.map((d) => {
-          const data = d.data() as FirestoreStockDoc;
-          const colorVariants = (data.colorVariants as ColorVariant[]) || [];
-          const stockFromVariants = Array.isArray(colorVariants)
-            ? colorVariants.reduce(
-                (total: number, v: ColorVariant) =>
-                  total +
-                  (v.sizeQuantities || []).reduce(
-                    (t: number, s: SizeQuantity) =>
-                      t + (Number(s.quantity) || 0),
-                    0,
-                  ),
-                0,
-              )
-            : 0;
-
-          return {
-            id: d.id,
-            name: data.groupName || data.name,
-            price:
-              typeof data.unitPrice === "number" ? data.unitPrice : data.price,
-            description: data.category || data.description,
-            image:
-              data.colorVariants?.[0]?.image || data.image || data.groupImage,
-            groupImage: data.groupImage,
-            colorVariants: colorVariants,
-            stock: data.stock || stockFromVariants || 0,
-            shop:
-              (data as FirestoreStockDoc).shop?.toString() ||
-              (data as FirestoreStockDoc).shopId?.toString() ||
-              (data as FirestoreStockDoc).branch?.toString() ||
-              "",
-            createdAt: data.createdAt || null,
-            isNew: (() => {
-              try {
-                const created = data.createdAt;
-                let createdMs = Date.now();
-                if (created) {
-                  if (
-                    typeof created === "object" &&
-                    created !== null &&
-                    "toMillis" in created &&
-                    typeof (created as { toMillis?: unknown }).toMillis ===
-                      "function"
-                  ) {
-                    createdMs = (
-                      created as { toMillis: () => number }
-                    ).toMillis();
-                  } else if (typeof created === "number") {
-                    createdMs = created;
-                  } else {
-                    createdMs = new Date(String(created)).getTime();
-                  }
-                }
-                return Date.now() - createdMs <= NEW_DAYS * MS_PER_DAY;
-              } catch (e) {
-                return false;
-              }
-            })(),
-          };
-        });
-        setProducts(items);
-      } catch (err: unknown) {
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError(String(err));
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProducts();
-  }, []);
-
-  // Load currency rate from owner settings API (authoritative source).
-  useEffect(() => {
-    const loadRate = async () => {
-      try {
-        const res = await fetch("/api/settings");
-        if (!res.ok) {
-          const text = await res.text().catch(() => "");
-          console.error("/api/settings returned non-ok", res.status, text);
-          return;
-        }
-        const json = await res.json().catch((err) => {
-          console.error("Failed parsing /api/settings JSON", err);
-          return null;
-        });
-        const rate =
-          json?.data?.currencyRate ??
-          json?.currencyRate ??
-          json?.data?.currencyRate;
-        const parsed = Number(rate);
-        if (!Number.isNaN(parsed) && parsed > 0) setMmkRate(parsed);
-      } catch (e) {
-        console.error("Error fetching /api/settings:", e);
-      }
-    };
-
-    loadRate();
-  }, []);
-
-  // fetch shops (branches) for the branch filter
-  useEffect(() => {
-    const loadShops = async () => {
-      try {
-        const res = await fetch("/api/shops");
-        if (!res.ok) return;
-        const json = await res.json().catch(() => null);
-        if (json && Array.isArray(json.data)) {
-          const mapped = json.data.map((s: { id: string; name: string }) => ({
-            id: s.id,
-            name: s.name,
-          }));
-          setShops(mapped);
-        }
-      } catch (e) {
-        console.error("Failed loading /api/shops", e);
-      }
-    };
-
-    loadShops();
-  }, []);
-
   // derive filter option lists from products
-  const branches = shops;
+  const branches = shopsData;
   // derive available options scoped to the selected branch
   const branchFilteredProducts = (() => {
     if (!products) return [] as Product[];
     if (filterBranch === "all") return products;
-    const selectedShop = shops.find((s) => s.id === filterBranch);
+    const selectedShop = shopsData.find((s) => s.id === filterBranch);
     const shopName = selectedShop?.name;
     return products.filter((p) => {
       const pShop = ((p as Product).shop || "").toString();
@@ -308,13 +146,13 @@ export default function ProductsList({
     if (filterSize && !sizes.map(String).includes(String(filterSize))) {
       setFilterSize("");
     }
-  }, [filterBranch, shops, products]);
+  }, [filterBranch, shopsData, products]);
 
   // apply filters
   const filteredProducts = products
     ? products.filter((p) => {
         if (filterBranch !== "all") {
-          const selectedShop = shops.find((s) => s.id === filterBranch);
+          const selectedShop = shopsData.find((s) => s.id === filterBranch);
           const shopName = selectedShop?.name;
           const pShop = ((p as Product).shop || "").toString();
           // match by id or by name
@@ -557,7 +395,7 @@ export default function ProductsList({
             {filterBranch !== "all" && (
               <span className="inline-flex items-center space-x-2 bg-pink-300 text-white text-sm px-3 py-1 rounded">
                 <span>
-                  {shops.find((s) => s.id === filterBranch)?.name ||
+                  {shopsData.find((s) => s.id === filterBranch)?.name ||
                     filterBranch}
                 </span>
                 <button

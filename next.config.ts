@@ -36,6 +36,8 @@ const nextConfig: NextConfig = {
       //   pathname: '/**',
       // },
     ],
+    // Cache optimized images for 1 year
+    minimumCacheTTL: 31536000,
   },
 };
 

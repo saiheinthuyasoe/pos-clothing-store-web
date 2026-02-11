@@ -3,29 +3,14 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import ProductsList from "../components/ProductsList";
+import { useNewItems } from "../hooks/useNewItems";
 
 function Carousel() {
-  type Item = {
-    image?: string;
-    groupImage?: string;
-    name?: string;
-  };
-
-  const [items, setItems] = useState<Item[]>([]);
   const [current, setCurrent] = useState(0);
-  const [loading, setLoading] = useState(true);
   const [paused, setPaused] = useState(false);
 
-  useEffect(() => {
-    // Fetch 4 newest items from backend
-    fetch("/api/new-items")
-      .then((res) => res.json())
-      .then((data) => {
-        setItems(data?.items?.slice(0, 4) || []);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
+  // Use TanStack Query hook for cached data fetching
+  const { data: items = [], isLoading: loading } = useNewItems(4);
 
   // Autoplay
   useEffect(() => {
