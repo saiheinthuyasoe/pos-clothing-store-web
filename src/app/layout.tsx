@@ -4,6 +4,8 @@ import "./globals.css";
 import NavBar from "../components/NavBar";
 import { LanguageProvider } from "../contexts/LanguageContext";
 import Footer from "../components/Footer";
+import InstallPrompt from "../components/InstallPrompt";
+import ServiceWorkerRegistration from "../components/ServiceWorkerRegistration";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,10 +21,18 @@ export const metadata: Metadata = {
   title: "Swe Trendy Hub",
   description: "Swe Trendy Hub - Online clothing store",
   icons: {
-    icon: "/logo.jpg",
-    shortcut: "/logo.jpg",
-    apple: "/logo.jpg",
+    icon: "/icon-192x192.png",
+    shortcut: "/icon-192x192.png",
+    apple: "/icon-192x192.png",
   },
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Swe Trendy Hub",
+  },
+  applicationName: "Swe Trendy Hub",
+  themeColor: "#111827",
 };
 
 export default function RootLayout({
@@ -52,10 +62,11 @@ export default function RootLayout({
         style={{ backgroundColor: "#ffffff", color: "#111827" }}
       >
         <LanguageProvider>
+          <ServiceWorkerRegistration />
           <NavBar />
           <main className="flex-1">{children}</main>
-
           <Footer />
+          <InstallPrompt />
         </LanguageProvider>
       </body>
     </html>
