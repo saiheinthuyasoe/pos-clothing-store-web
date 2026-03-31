@@ -291,6 +291,23 @@ export default function ProductsList({
   const endIndex = startIndex + itemsPerPage;
   const visibleProducts = sortedProducts.slice(startIndex, endIndex);
 
+  const paginationItems: Array<number | "ellipsis"> = (() => {
+    if (totalPages <= 7) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+
+    const items: Array<number | "ellipsis"> = [1];
+    const start = Math.max(2, currentPage - 1);
+    const end = Math.min(totalPages - 1, currentPage + 1);
+
+    if (start > 2) items.push("ellipsis");
+    for (let page = start; page <= end; page++) items.push(page);
+    if (end < totalPages - 1) items.push("ellipsis");
+
+    items.push(totalPages);
+    return items;
+  })();
+
   if (loading)
     return (
       <div className="bg-white">
@@ -1011,41 +1028,58 @@ export default function ProductsList({
       )}
 
       {/* Pagination controls */}
-      <div className="flex items-center justify-center space-x-2 mt-6">
-        <button
-          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-          disabled={currentPage === 1}
-          className="px-3 py-1 rounded border border-gray-300 bg-white text-sm disabled:opacity-50"
-        >
-          {t("prev")}
-        </button>
+      <div className="mt-8 flex flex-col items-center gap-3">
+        <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 p-2 shadow-sm">
+          <button
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className="h-9 rounded-full border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {t("prev")}
+          </button>
 
-        <div className="flex items-center space-x-1">
-          {Array.from({ length: totalPages }).map((_, i) => {
-            const page = i + 1;
-            return (
-              <button
-                key={page}
-                onClick={() => setCurrentPage(page)}
-                className={`px-3 py-1 rounded text-sm border ${
-                  currentPage === page
-                    ? "bg-gray-600 text-white border-gray-600"
-                    : "bg-white text-gray-700 border-gray-200"
-                }`}
-              >
-                {page}
-              </button>
-            );
-          })}
+          <div className="flex items-center gap-1">
+            {paginationItems.map((item, idx) => {
+              if (item === "ellipsis") {
+                return (
+                  <span
+                    key={`ellipsis-${idx}`}
+                    className="inline-flex h-9 w-9 items-center justify-center text-sm text-gray-400"
+                  >
+                    ...
+                  </span>
+                );
+              }
+
+              const page = item;
+              return (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`h-9 min-w-9 rounded-full px-3 text-sm font-semibold transition ${
+                    currentPage === page
+                      ? "bg-pink-500 text-white shadow"
+                      : "bg-white text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  {page}
+                </button>
+              );
+            })}
+          </div>
+
+          <button
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+            className="h-9 rounded-full border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {t("next")}
+          </button>
         </div>
 
-        <button
-          onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-          disabled={currentPage === totalPages}
-          className="px-3 py-1 rounded border border-gray-300 bg-white text-sm disabled:opacity-50"
-        >
-          {t("next")}
-        </button>
+        <p className="text-xs text-gray-500">
+          Page {currentPage} of {totalPages}
+        </p>
       </div>
     </>
   );
