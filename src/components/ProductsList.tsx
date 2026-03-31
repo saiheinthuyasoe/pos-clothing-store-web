@@ -1029,7 +1029,29 @@ export default function ProductsList({
 
       {/* Pagination controls */}
       <div className="mt-8 flex flex-col items-center gap-3">
-        <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 p-2 shadow-sm">
+        <div className="flex w-full max-w-md items-center justify-between gap-2 rounded-full border border-gray-200 bg-gray-50 p-2 shadow-sm sm:hidden">
+          <button
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className="h-9 rounded-full border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {t("prev")}
+          </button>
+
+          <span className="px-2 text-xs font-medium text-gray-600">
+            {currentPage} / {totalPages}
+          </span>
+
+          <button
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+            className="h-9 rounded-full border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {t("next")}
+          </button>
+        </div>
+
+        <div className="hidden items-center gap-2 rounded-full border border-gray-200 bg-gray-50 p-2 shadow-sm sm:inline-flex">
           <button
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             disabled={currentPage === 1}
