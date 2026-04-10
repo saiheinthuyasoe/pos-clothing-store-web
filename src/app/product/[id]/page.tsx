@@ -334,8 +334,7 @@ export default function ProductDetailPage() {
                         : `฿ ${displayPrice.toFixed(2)}`}
                     </span>
                     <span className="text-gray-500 ml-3">{` / ${Math.round(
-                      displayPrice *
-                        (Number(process?.env?.NEXT_PUBLIC_MMK_RATE) || 55),
+                      displayPrice * mmkRate,
                     ).toLocaleString()} Ks`}</span>
                   </>
                 ) : (

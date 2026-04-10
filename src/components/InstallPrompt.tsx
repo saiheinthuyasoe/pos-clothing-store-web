@@ -52,8 +52,10 @@ export default function InstallPrompt() {
       console.log("User accepted the install prompt");
     } else {
       console.log("User dismissed the install prompt");
-      localStorage.setItem("pwa-install-dismissed", "true");
     }
+
+    // Always set the flag so we don't ask again
+    localStorage.setItem("pwa-install-dismissed", "true");
 
     setDeferredPrompt(null);
     setShowInstallPrompt(false);
