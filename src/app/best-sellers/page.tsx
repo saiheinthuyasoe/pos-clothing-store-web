@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -41,7 +41,14 @@ export default function BestSellersPage() {
   const [items, setItems] = useState<ProductItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
+  const getPageFromLocation = () => {
+    if (typeof window === "undefined") return 1;
+    const pageParam = Number(
+      new URLSearchParams(window.location.search).get("page") || "1",
+    );
+    return Number.isFinite(pageParam) && pageParam > 0 ? pageParam : 1;
+  };
+  const [currentPage, setCurrentPage] = useState(getPageFromLocation);
   const itemsPerPage = 20;
   const [sortBy, setSortBy] = useState<
     "sales" | "price_asc" | "price_desc" | "name_asc" | "name_desc" | "newest"
@@ -211,16 +218,21 @@ export default function BestSellersPage() {
   const searchParams = useSearchParams();
   const urlQuery = (searchParams?.get("q") || "").trim();
   const [localQuery, setLocalQuery] = useState<string>(urlQuery);
+  const latestQueryRef = useRef(urlQuery);
 
   useEffect(() => {
     setLocalQuery(urlQuery);
+    latestQueryRef.current = urlQuery;
   }, [urlQuery]);
 
   useEffect(() => {
     const handler = (e: CustomEvent) => {
       const q = (e?.detail || "").toString();
-      setLocalQuery((q || "").toString());
-      setCurrentPage(1);
+      const nextQuery = (q || "").trim();
+      const currentQuery = (latestQueryRef.current || "").trim();
+      setLocalQuery(nextQuery);
+      latestQueryRef.current = nextQuery;
+      if (nextQuery !== currentQuery) setCurrentPage(1);
     };
     if (typeof window !== "undefined") {
       window.addEventListener("app:search", handler as EventListener);
@@ -251,6 +263,31 @@ export default function BestSellersPage() {
     startFiltered,
     startFiltered + itemsPerPage,
   );
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const onPopState = () => {
+      const nextPage = getPageFromLocation();
+      setCurrentPage((prev) => (prev === nextPage ? prev : nextPage));
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (currentPage <= 1) params.delete("page");
+    else params.set("page", String(currentPage));
+    const qs = params.toString();
+    const nextUrl = qs
+      ? `${window.location.pathname}?${qs}`
+      : window.location.pathname;
+    const currentUrl = `${window.location.pathname}${window.location.search}`;
+    if (nextUrl !== currentUrl) {
+      window.history.replaceState(null, "", nextUrl);
+    }
+  }, [currentPage]);
 
   const { t } = useLanguage();
 

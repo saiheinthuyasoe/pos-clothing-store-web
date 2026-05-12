@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useLanguage } from "../contexts/LanguageContext";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useProducts, type Product } from "../hooks/useProducts";
 import { useCurrencyRate } from "../hooks/useSettings";
@@ -31,19 +31,33 @@ export default function ProductsList({
   hideFilters?: boolean;
 }) {
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const urlQuery = (searchParams?.get("q") || "").trim();
   const [localQuery, setLocalQuery] = useState(urlQuery);
+  const latestQueryRef = useRef(urlQuery);
+  const getPageFromLocation = () => {
+    if (typeof window === "undefined") return 1;
+    const pageParam = Number(
+      new URLSearchParams(window.location.search).get("page") || "1",
+    );
+    return Number.isFinite(pageParam) && pageParam > 0 ? pageParam : 1;
+  };
 
   // sync localQuery with URL param changes
   useEffect(() => {
     setLocalQuery(urlQuery);
+    latestQueryRef.current = urlQuery;
   }, [urlQuery]);
 
   // listen for global search events dispatched from NavBar when using replaceState
   useEffect(() => {
     const handler = (e: CustomEvent) => {
       const q = (e?.detail || "").toString();
-      setLocalQuery(q || "");
+      const nextQuery = (q || "").trim();
+      const currentQuery = (latestQueryRef.current || "").trim();
+      setLocalQuery(nextQuery);
+      latestQueryRef.current = nextQuery;
+      if (nextQuery !== currentQuery) setCurrentPage(1);
     };
     if (typeof window !== "undefined") {
       window.addEventListener("app:search", handler as EventListener);
@@ -80,7 +94,9 @@ export default function ProductsList({
   const [selectedSizes, setSelectedSizes] = useState<Record<string, string>>(
     {},
   );
-  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [currentPage, setCurrentPage] = useState<number>(() =>
+    getPageFromLocation(),
+  );
   const [itemsPerPage] = useState<number>(itemsPerPageDefault);
   const [showFilter, setShowFilter] = useState(false);
   const [filterBranch, setFilterBranch] = useState<string>("all");
@@ -96,6 +112,10 @@ export default function ProductsList({
     "newest" | "price-asc" | "price-desc" | "name-asc" | "name-desc"
   >("newest");
   const { t } = useLanguage();
+  const paginationInitialized = useRef(false);
+  const filtersInitialized = useRef(false);
+  const prevFilterKey = useRef<string | null>(null);
+  const urlSyncTimeout = useRef<number | null>(null);
 
   // derive filter option lists from products
   const branches = shopsData;
@@ -274,11 +294,72 @@ export default function ProductsList({
     1,
     Math.ceil(sortedProducts.length / itemsPerPage),
   );
-  // ensure current page is within bounds when products or filters change
+
   useEffect(() => {
-    setCurrentPage(1);
+    if (typeof window === "undefined") return;
+    const onPopState = () => {
+      const nextPage = getPageFromLocation();
+      setCurrentPage((prev) => (prev === nextPage ? prev : nextPage));
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+
+  useEffect(() => {
+    if (!paginationInitialized.current) paginationInitialized.current = true;
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (currentPage <= 1) params.delete("page");
+    else params.set("page", String(currentPage));
+    const qs = params.toString();
+    const nextUrl = qs ? `${pathname}?${qs}` : pathname;
+    const currentUrl = `${window.location.pathname}${window.location.search}`;
+    if (nextUrl !== currentUrl) {
+      window.history.replaceState(null, "", nextUrl);
+    }
+
+    if (urlSyncTimeout.current) {
+      window.clearTimeout(urlSyncTimeout.current);
+    }
+    urlSyncTimeout.current = window.setTimeout(() => {
+      const paramsLater = new URLSearchParams(window.location.search);
+      const pageParam = paramsLater.get("page");
+      if (currentPage > 1 && pageParam !== String(currentPage)) {
+        paramsLater.set("page", String(currentPage));
+        const qsLater = paramsLater.toString();
+        const nextUrlLater = qsLater ? `${pathname}?${qsLater}` : pathname;
+        window.history.replaceState(null, "", nextUrlLater);
+      }
+    }, 500);
+
+    return () => {
+      if (urlSyncTimeout.current) {
+        window.clearTimeout(urlSyncTimeout.current);
+      }
+    };
+  }, [currentPage, pathname]);
+
+  // reset page only when filters actually change (not on initial load)
+  useEffect(() => {
+    if (!paginationInitialized.current) return;
+    const key = JSON.stringify({
+      filterBranch,
+      filterCategory,
+      filterSize,
+      filterMinPrice,
+      filterMaxPrice,
+      filterCurrency,
+    });
+    if (!filtersInitialized.current) {
+      filtersInitialized.current = true;
+      prevFilterKey.current = key;
+      return;
+    }
+    if (prevFilterKey.current !== key) {
+      prevFilterKey.current = key;
+      setCurrentPage(1);
+    }
   }, [
-    products,
     filterBranch,
     filterCategory,
     filterSize,

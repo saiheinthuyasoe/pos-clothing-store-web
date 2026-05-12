@@ -35,12 +35,23 @@ export default function NavBar() {
 
   const searchInputRef = useRef<HTMLInputElement | null>(null);
 
+  const buildInlineUrl = (term: string) => {
+    const basePath = pathname || "/";
+    if (typeof window === "undefined") {
+      return term ? `${basePath}?q=${encodeURIComponent(term)}` : basePath;
+    }
+    const params = new URLSearchParams(window.location.search);
+    if (term) params.set("q", term);
+    else params.delete("q");
+    const qs = params.toString();
+    return qs ? `${basePath}?${qs}` : basePath;
+  };
+
   // Update URL query without closing UI (used for live typing)
   const updateUrlQuery = (term: string) => {
     try {
       if (supportsInlineSearch(pathname)) {
-        const lg = pathname || "/";
-        const newUrl = term ? `${lg}?q=${encodeURIComponent(term)}` : lg;
+        const newUrl = buildInlineUrl(term);
         // replace history state without triggering navigation
         if (typeof window !== "undefined") {
           window.history.replaceState(null, "", newUrl);
@@ -67,8 +78,7 @@ export default function NavBar() {
     const term = (q ?? searchQuery).trim();
     try {
       if (supportsInlineSearch(pathname)) {
-        const lg = pathname || "/";
-        const newUrl = term ? `${lg}?q=${encodeURIComponent(term)}` : lg;
+        const newUrl = buildInlineUrl(term);
         try {
           router.replace(newUrl);
         } finally {
