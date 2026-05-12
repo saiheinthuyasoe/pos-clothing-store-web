@@ -256,29 +256,33 @@ export default function BestSellersPage() {
 
   if (loading)
     return (
-      <div className="max-w-6xl mx-auto py-8 px-4">
-        <h1 className="text-2xl font-serif text-center text-pink-400 mb-6 font-pacifico">
-          {t("best_sellers")}
-        </h1>
+      <div className="min-h-screen bg-white font-sans text-black">
+        <main className="mx-auto max-w-6xl py-8">
+          <section className="px-6">
+            <h1 className="text-2xl font-serif text-center text-pink-400 mb-6 font-pacifico">
+              {t("best_sellers")}
+            </h1>
 
-        <div className="border border-pink-300 m-9 mr-30 ml-30"></div>
+            <div className="border border-pink-300 my-6" />
 
-        <div className="mx-auto max-w-xl text-center">
-          <div className="flex items-center justify-center">
-            <div className="h-12 w-12 border-4 border-gray-200 border-t-pink-500 rounded-full animate-spin" />
-          </div>
-          <div className="mt-4 h-6 bg-gray-100 rounded w-48 mx-auto animate-pulse" />
-        </div>
-
-        <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-          {Array.from({ length: 10 }).map((_, i) => (
-            <div key={i} className="animate-pulse">
-              <div className="aspect-[5/8] bg-gray-100 rounded-md mb-2" />
-              <div className="h-4 bg-gray-100 rounded w-3/4 mb-2" />
-              <div className="h-3 bg-gray-100 rounded w-1/2" />
+            <div className="mx-auto max-w-xl text-center">
+              <div className="flex items-center justify-center">
+                <div className="h-12 w-12 border-4 border-gray-200 border-t-pink-500 rounded-full animate-spin" />
+              </div>
+              <div className="mt-4 h-6 bg-gray-100 rounded w-48 mx-auto animate-pulse" />
             </div>
-          ))}
-        </div>
+
+            <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+              {Array.from({ length: 10 }).map((_, i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="aspect-[5/8] bg-gray-100 rounded-md mb-2" />
+                  <div className="h-4 bg-gray-100 rounded w-3/4 mb-2" />
+                  <div className="h-3 bg-gray-100 rounded w-1/2" />
+                </div>
+              ))}
+            </div>
+          </section>
+        </main>
       </div>
     );
   if (error) return <div className="p-6 text-red-600">Error: {error}</div>;
@@ -298,109 +302,185 @@ export default function BestSellersPage() {
     );
   }
 
+  const paginationItems: Array<number | "ellipsis"> = (() => {
+    if (totalPagesFiltered <= 7) {
+      return Array.from({ length: totalPagesFiltered }, (_, i) => i + 1);
+    }
+
+    const itemsList: Array<number | "ellipsis"> = [1];
+    const startPage = Math.max(2, currentPage - 1);
+    const endPage = Math.min(totalPagesFiltered - 1, currentPage + 1);
+
+    if (startPage > 2) itemsList.push("ellipsis");
+    for (let page = startPage; page <= endPage; page++) itemsList.push(page);
+    if (endPage < totalPagesFiltered - 1) itemsList.push("ellipsis");
+
+    itemsList.push(totalPagesFiltered);
+    return itemsList;
+  })();
+
   return (
-    <div className="max-w-6xl mx-auto py-8 px-4">
-      <h1 className="text-2xl font-serif text-center text-pink-400 mb-6 font-pacifico">
-        Best Seller
-      </h1>
+    <div className="min-h-screen bg-white font-sans text-black">
+      <main className="mx-auto max-w-6xl py-8">
+        <section className="px-6">
+          <h1 className="text-2xl font-serif text-center text-pink-400 mb-6 font-pacifico">
+            Best Seller
+          </h1>
 
-      <div className="border border-pink-300 m-9 mr-30 ml-30"></div>
+          <div className="border border-pink-300 my-6" />
 
-      <div className="flex items-center justify-between mb-4">
-        <div className="text-sm text-gray-600">
-          {items.length} {t("best_sellers")}
-        </div>
-        <div>
-          <select
-            title="sortBy"
-            value={sortBy}
-            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-              setSortBy(
-                e.target.value as
-                  | "sales"
-                  | "price_asc"
-                  | "price_desc"
-                  | "name_asc"
-                  | "name_desc"
-                  | "newest",
-              )
-            }
-            className="border border-gray-200 rounded px-2 py-1 text-sm bg-white"
-          >
-            <option value="sales">{t("sort_sales")}</option>
-            <option value="price_asc">{t("sort_price_asc")}</option>
-            <option value="price_desc">{t("sort_price_desc")}</option>
-            <option value="name_asc">{t("sort_name_asc")}</option>
-            <option value="name_desc">{t("sort_name_desc")}</option>
-            <option value="newest">{t("sort_newest")}</option>
-          </select>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-        {visible.map((p) => (
-          <Link key={p.id} href={`/product/${p.id}`} className="block">
-            <div className="group bg-white hover:shadow-lg transition p-2">
-              <div className="aspect-[5/8] bg-gray-50 overflow-hidden mb-2">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={p.image || p.groupImage}
-                  alt={p.name}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="text-sm font-medium text-gray-900 mb-1">
-                {p.name}
-              </div>
-              <div className="text-sm text-gray-600">
-                {p.price ? `฿ ${p.price}` : "—"}
-              </div>
-              {/* <div className="text-xs text-gray-500 mt-1">
-                {t("sold")}: {p.salesCount}
-              </div> */}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
+            <div className="text-sm text-gray-600">
+              {items.length} {t("best_sellers")}
             </div>
-          </Link>
-        ))}
-      </div>
+            <div className="text-sm">
+              <div className="relative inline-flex items-center">
+                <select
+                  title="sortBy"
+                  value={sortBy}
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                    setSortBy(
+                      e.target.value as
+                        | "sales"
+                        | "price_asc"
+                        | "price_desc"
+                        | "name_asc"
+                        | "name_desc"
+                        | "newest",
+                    )
+                  }
+                  className="peer border border-gray-200 rounded px-2 py-1 text-sm bg-white appearance-none pr-8"
+                >
+                  <option value="sales">{t("sort_sales")}</option>
+                  <option value="price_asc">{t("sort_price_asc")}</option>
+                  <option value="price_desc">{t("sort_price_desc")}</option>
+                  <option value="name_asc">{t("sort_name_asc")}</option>
+                  <option value="name_desc">{t("sort_name_desc")}</option>
+                  <option value="newest">{t("sort_newest")}</option>
+                </select>
+                <svg
+                  className="h-4 w-4 absolute right-2 transform transition-transform duration-200 peer-focus:rotate-180 pointer-events-none text-gray-600"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden
+                >
+                  <path
+                    d="M5 8.5L10 13.5L15 8.5"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
 
-      <div className="flex items-center justify-center space-x-2 mt-6">
-        <button
-          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-          disabled={currentPage === 1}
-          className="px-3 py-1 rounded border border-gray-300 bg-white text-sm disabled:opacity-50"
-        >
-          {t("prev")}
-        </button>
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            {visible.map((p) => (
+              <Link key={p.id} href={`/product/${p.id}`} className="block">
+                <div className="group bg-white hover:shadow-lg transition p-2">
+                  <div className="aspect-[5/8] bg-gray-50 overflow-hidden mb-2">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={p.image || p.groupImage}
+                      alt={p.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="text-sm font-medium text-gray-900 mb-1">
+                    {p.name}
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    {p.price ? `฿ ${p.price}` : "—"}
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
 
-        <div className="flex items-center space-x-1">
-          {Array.from({ length: totalPagesFiltered }).map((_, i) => {
-            const page = i + 1;
-            return (
+          <div className="mt-8 flex flex-col items-center gap-3">
+            <div className="flex w-full max-w-md items-center justify-between gap-2 rounded-full border border-gray-200 bg-gray-50 p-2 shadow-sm sm:hidden">
               <button
-                key={page}
-                onClick={() => setCurrentPage(page)}
-                className={`px-3 py-1 rounded text-sm border ${
-                  currentPage === page
-                    ? "bg-gray-600 text-white border-gray-600"
-                    : "bg-white text-gray-700 border-gray-200"
-                }`}
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="h-9 rounded-full border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {page}
+                {t("prev")}
               </button>
-            );
-          })}
-        </div>
 
-        <button
-          onClick={() =>
-            setCurrentPage((p) => Math.min(totalPagesFiltered, p + 1))
-          }
-          disabled={currentPage === totalPagesFiltered}
-          className="px-3 py-1 rounded border border-gray-300 bg-white text-sm disabled:opacity-50"
-        >
-          {t("next")}
-        </button>
-      </div>
+              <span className="px-2 text-xs font-medium text-gray-600">
+                {currentPage} / {totalPagesFiltered}
+              </span>
+
+              <button
+                onClick={() =>
+                  setCurrentPage((p) => Math.min(totalPagesFiltered, p + 1))
+                }
+                disabled={currentPage === totalPagesFiltered}
+                className="h-9 rounded-full border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {t("next")}
+              </button>
+            </div>
+
+            <div className="hidden items-center gap-2 rounded-full border border-gray-200 bg-gray-50 p-2 shadow-sm sm:inline-flex">
+              <button
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="h-9 rounded-full border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {t("prev")}
+              </button>
+
+              <div className="flex items-center gap-1">
+                {paginationItems.map((item, idx) => {
+                  if (item === "ellipsis") {
+                    return (
+                      <span
+                        key={`ellipsis-${idx}`}
+                        className="inline-flex h-9 w-9 items-center justify-center text-sm text-gray-400"
+                      >
+                        ...
+                      </span>
+                    );
+                  }
+
+                  const page = item;
+                  return (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`h-9 min-w-9 rounded-full px-3 text-sm font-semibold transition ${
+                        currentPage === page
+                          ? "bg-pink-500 text-white shadow"
+                          : "bg-white text-gray-700 hover:bg-gray-100"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <button
+                onClick={() =>
+                  setCurrentPage((p) => Math.min(totalPagesFiltered, p + 1))
+                }
+                disabled={currentPage === totalPagesFiltered}
+                className="h-9 rounded-full border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {t("next")}
+              </button>
+            </div>
+
+            <p className="text-xs text-gray-500">
+              Page {currentPage} of {totalPagesFiltered}
+            </p>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }
