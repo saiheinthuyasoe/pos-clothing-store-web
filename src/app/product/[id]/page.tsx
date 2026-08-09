@@ -6,6 +6,8 @@ import Link from "next/link";
 import ProductsList from "../../../components/ProductsList";
 import { useProduct } from "../../../hooks/useProducts";
 import { useCurrencyRate } from "../../../hooks/useSettings";
+import { usePromotions } from "../../../hooks/usePromotions";
+import { getBestPromotion } from "../../../lib/promotionUtils";
 
 type SizeQuantity = { size?: string; quantity?: number | string };
 type ColorVariant = {
@@ -28,6 +30,7 @@ export default function ProductDetailPage() {
     error: queryError,
   } = useProduct(id);
   const { rate: mmkRate } = useCurrencyRate();
+  const { data: promotions = [] } = usePromotions();
 
   const error = queryError
     ? queryError instanceof Error
@@ -89,6 +92,11 @@ export default function ProductDetailPage() {
     (v) => String(v.id ?? v.color ?? String(v)) === String(selectedVariantId),
   );
 
+  const promoMatch =
+    displayPrice !== null
+      ? getBestPromotion(displayPrice, id, selectedVariant?.id, promotions)
+      : null;
+
   const mainImageSrc =
     selectedVariant?.image ||
     product?.groupImage ||
@@ -98,8 +106,9 @@ export default function ProductDetailPage() {
       displayName || "Product",
     )}`;
 
+  const effectivePrice = promoMatch ? promoMatch.discountedPrice : displayPrice;
   const mmkPrice =
-    displayPrice !== null ? Math.round(displayPrice * mmkRate) : null;
+    effectivePrice !== null ? Math.round(effectivePrice * mmkRate) : null;
 
   const selectedQty = (() => {
     if (!selectedVariant) return 0;
@@ -327,16 +336,32 @@ export default function ProductDetailPage() {
 
               <div className="mt-1 text-2xl xl:text-3xl text-gray-900">
                 {displayPrice !== null ? (
-                  <>
-                    <span className="font-semibold text-2xl md:text-3xl">
-                      {Number.isInteger(displayPrice)
-                        ? `฿ ${displayPrice.toFixed(0)}`
-                        : `฿ ${displayPrice.toFixed(2)}`}
-                    </span>
-                    <span className="text-gray-500 ml-3">{` / ${Math.round(
-                      displayPrice * mmkRate,
-                    ).toLocaleString()} Ks`}</span>
-                  </>
+                  promoMatch ? (
+                    <>
+                      <span className="font-semibold text-2xl md:text-3xl text-red-600">
+                        {Number.isInteger(promoMatch.discountedPrice)
+                          ? `฿ ${promoMatch.discountedPrice.toFixed(0)}`
+                          : `฿ ${promoMatch.discountedPrice.toFixed(2)}`}
+                      </span>
+                      <span className="text-gray-400 line-through text-lg md:text-xl ml-3">
+                        {Number.isInteger(displayPrice)
+                          ? `฿ ${displayPrice.toFixed(0)}`
+                          : `฿ ${displayPrice.toFixed(2)}`}
+                      </span>
+                      <span className="text-gray-500 ml-3 block text-base mt-1">{`${mmkPrice?.toLocaleString()} Ks`}</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="font-semibold text-2xl md:text-3xl">
+                        {Number.isInteger(displayPrice)
+                          ? `฿ ${displayPrice.toFixed(0)}`
+                          : `฿ ${displayPrice.toFixed(2)}`}
+                      </span>
+                      <span className="text-gray-500 ml-3">{` / ${Math.round(
+                        displayPrice * mmkRate,
+                      ).toLocaleString()} Ks`}</span>
+                    </>
+                  )
                 ) : (
                   "—"
                 )}
@@ -476,10 +501,21 @@ export default function ProductDetailPage() {
                         {displayPrice !== null ? (
                           <>
                             <span className="font-semibold">
-                              {Number.isInteger(displayPrice)
-                                ? `฿ ${displayPrice.toFixed(0)}`
-                                : `฿ ${displayPrice.toFixed(2)}`}
+                              {promoMatch
+                                ? Number.isInteger(promoMatch.discountedPrice)
+                                  ? `฿ ${promoMatch.discountedPrice.toFixed(0)}`
+                                  : `฿ ${promoMatch.discountedPrice.toFixed(2)}`
+                                : Number.isInteger(displayPrice)
+                                  ? `฿ ${displayPrice.toFixed(0)}`
+                                  : `฿ ${displayPrice.toFixed(2)}`}
                             </span>
+                            {promoMatch ? (
+                              <span className="text-gray-400 line-through text-sm ml-2">
+                                {Number.isInteger(displayPrice)
+                                  ? `฿ ${displayPrice.toFixed(0)}`
+                                  : `฿ ${displayPrice.toFixed(2)}`}
+                              </span>
+                            ) : null}
                             {mmkPrice !== null ? (
                               <span className="text-gray-500 text-sm ml-2">
                                 / {mmkPrice.toLocaleString()} Ks

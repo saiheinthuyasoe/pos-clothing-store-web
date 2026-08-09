@@ -7,6 +7,8 @@ import Link from "next/link";
 import { useProducts, type Product } from "../hooks/useProducts";
 import { useCurrencyRate } from "../hooks/useSettings";
 import { useShops } from "../hooks/useShops";
+import { usePromotions } from "../hooks/usePromotions";
+import { getBestPromotion } from "../lib/promotionUtils";
 
 type SizeQuantity = {
   size?: string;
@@ -77,6 +79,7 @@ export default function ProductsList({
   } = useProducts();
   const { rate: mmkRate } = useCurrencyRate();
   const { data: shopsData = [] } = useShops();
+  const { data: promotions = [] } = usePromotions();
 
   const [error, setError] = useState<string | null>(null);
 
@@ -661,6 +664,13 @@ export default function ProductsList({
               ) || p.colorVariants![0]
             : null;
 
+          const promoMatch = getBestPromotion(
+            Number(p.price) || 0,
+            p.id,
+            variant?.id,
+            promotions,
+          );
+
           // If a color is selected, show sizes for that variant only.
           // If no color selected, aggregate sizes across all variants and
           // show sizes whose total quantity > 0.
@@ -699,6 +709,13 @@ export default function ProductsList({
                   {p.isNew && !isOutOfStock && (
                     <span className="absolute top-2 left-2 bg-green-500 text-white text-[10px] px-1 py-0.5 rounded z-10">
                       {t("new_label")}
+                    </span>
+                  )}
+                  {promoMatch && !isOutOfStock && (
+                    <span className="absolute top-2 right-2 bg-red-500 text-white text-[10px] px-1 py-0.5 rounded z-10">
+                      {promoMatch.promotion.discountType === "percentage"
+                        ? `-${promoMatch.promotion.discountValue}%`
+                        : `-${promoMatch.discountAmount.toFixed(0)}฿`}
                     </span>
                   )}
                   {isOutOfStock && (
@@ -742,16 +759,36 @@ export default function ProductsList({
 
                   <div className="mb-5">
                     {p.price ? (
-                      <div className="text-sm text-gray-900">
-                        <span className="font-medium">
-                          {Number.isInteger(p.price)
-                            ? `฿ ${p.price.toFixed(0)}`
-                            : `฿ ${p.price.toFixed(2)}`}
-                        </span>
-                        <span className="text-gray-500">{` / ${Math.round(
-                          p.price * mmkRate,
-                        ).toLocaleString()} Ks`}</span>
-                      </div>
+                      promoMatch ? (
+                        <div className="text-sm">
+                          <div>
+                            <span className="font-medium text-red-600">
+                              {Number.isInteger(promoMatch.discountedPrice)
+                                ? `฿ ${promoMatch.discountedPrice.toFixed(0)}`
+                                : `฿ ${promoMatch.discountedPrice.toFixed(2)}`}
+                            </span>
+                            <span className="text-gray-400 line-through ml-2">
+                              {Number.isInteger(promoMatch.originalPrice)
+                                ? `฿ ${promoMatch.originalPrice.toFixed(0)}`
+                                : `฿ ${promoMatch.originalPrice.toFixed(2)}`}
+                            </span>
+                          </div>
+                          <span className="text-gray-500">{`${Math.round(
+                            promoMatch.discountedPrice * mmkRate,
+                          ).toLocaleString()} Ks`}</span>
+                        </div>
+                      ) : (
+                        <div className="text-sm text-gray-900">
+                          <span className="font-medium">
+                            {Number.isInteger(p.price)
+                              ? `฿ ${p.price.toFixed(0)}`
+                              : `฿ ${p.price.toFixed(2)}`}
+                          </span>
+                          <span className="text-gray-500">{` / ${Math.round(
+                            p.price * mmkRate,
+                          ).toLocaleString()} Ks`}</span>
+                        </div>
+                      )
                     ) : (
                       <span className="text-sm text-gray-900">—</span>
                     )}
